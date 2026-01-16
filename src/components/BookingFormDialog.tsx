@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, ArrowLeft, Send, Building2, Target, Settings, Brain, UserCheck, CalendarCheck, Rocket } from "lucide-react";
+import { ArrowRight, ArrowLeft, Send, Building2, Target, Settings, Brain, UserCheck, CalendarCheck, Rocket, User } from "lucide-react";
 
 interface BookingFormDialogProps {
   open: boolean;
@@ -13,44 +13,49 @@ interface BookingFormDialogProps {
 }
 
 const steps = [
-  { id: 1, title: "Identité & Contexte", icon: Building2, subtitle: "Qui êtes-vous ?" },
-  { id: 2, title: "Vision & Ambition", icon: Target, subtitle: "Vos objectifs" },
-  { id: 3, title: "Organisation", icon: Settings, subtitle: "Votre quotidien" },
-  { id: 4, title: "IA & Automatisation", icon: Brain, subtitle: "Votre maturité" },
-  { id: 5, title: "Décision", icon: UserCheck, subtitle: "Votre engagement" },
-  { id: 6, title: "Séance Gratuite", icon: CalendarCheck, subtitle: "Le décollage" },
+  { id: 1, title: "Vos Coordonnées", icon: User, subtitle: "Pour vous contacter" },
+  { id: 2, title: "Identité & Contexte", icon: Building2, subtitle: "Qui êtes-vous ?" },
+  { id: 3, title: "Vision & Ambition", icon: Target, subtitle: "Vos objectifs" },
+  { id: 4, title: "Organisation", icon: Settings, subtitle: "Votre quotidien" },
+  { id: 5, title: "IA & Automatisation", icon: Brain, subtitle: "Votre maturité" },
+  { id: 6, title: "Décision", icon: UserCheck, subtitle: "Votre engagement" },
+  { id: 7, title: "Séance Gratuite", icon: CalendarCheck, subtitle: "Le décollage" },
 ];
 
 const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    // Step 1 - Identité & Contexte
+    // Step 1 - Coordonnées
+    fullName: "",
+    email: "",
+    phone: "",
+    // Step 2 - Identité & Contexte
     companyName: "",
     role: "",
     companyAge: "",
     employeeCount: "",
     sector: "",
-    // Step 2 - Vision & Ambition
+    // Step 3 - Vision & Ambition
     vision2to3Years: "",
     growthLimit: "",
     speedBlocker: "",
     noChangeConsequence: "",
-    // Step 3 - Organisation
+    // Step 4 - Organisation
     timeConsumingTasks: "",
     humanDependentTasks: "",
     errorProneAreas: "",
     unstructuredProcesses: "",
-    // Step 4 - IA & Automatisation
+    // Step 5 - IA & Automatisation
     currentAITools: "",
     aiToolsUsage: "",
     aiFrustrations: "",
     topAutomationPriority: "",
-    // Step 5 - Décision
+    // Step 6 - Décision
     isDecisionMaker: "",
     previousInvestments: "",
     failureCriteria: "",
     projectPriority: "",
-    // Step 6 - Séance Gratuite
+    // Step 7 - Séance Gratuite
     whyNow: "",
     sessionExpectations: "",
     readyToChange: "",
@@ -61,7 +66,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
   };
 
   const nextStep = () => {
-    if (currentStep < 6) setCurrentStep(currentStep + 1);
+    if (currentStep < 7) setCurrentStep(currentStep + 1);
   };
 
   const prevStep = () => {
@@ -75,11 +80,68 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     setCurrentStep(1);
   };
 
-  const progressPercentage = (currentStep / 6) * 100;
+  const progressPercentage = (currentStep / 7) * 100;
 
   const renderStep = () => {
     switch (currentStep) {
       case 1:
+        return (
+          <div className="space-y-5">
+            <div className="space-y-4">
+              <div className="group">
+                <Label htmlFor="fullName" className="text-foreground text-sm font-medium mb-2 block">
+                  Quel est votre nom et prénom ?
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="fullName"
+                    value={formData.fullName}
+                    onChange={(e) => handleInputChange("fullName", e.target.value)}
+                    className="space-input"
+                    placeholder="Ex: Jean Dupont"
+                  />
+                  <div className="input-glow" />
+                </div>
+              </div>
+              
+              <div className="group">
+                <Label htmlFor="email" className="text-foreground text-sm font-medium mb-2 block">
+                  Quelle est votre adresse email ?
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    className="space-input"
+                    placeholder="Ex: jean.dupont@entreprise.com"
+                  />
+                  <div className="input-glow" />
+                </div>
+              </div>
+              
+              <div className="group">
+                <Label htmlFor="phone" className="text-foreground text-sm font-medium mb-2 block">
+                  Quel est votre numéro de téléphone ?
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange("phone", e.target.value)}
+                    className="space-input"
+                    placeholder="Ex: +33 6 12 34 56 78"
+                  />
+                  <div className="input-glow" />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 2:
         return (
           <div className="space-y-5">
             <div className="space-y-4">
@@ -166,7 +228,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
           </div>
         );
 
-      case 2:
+      case 3:
         return (
           <div className="space-y-5">
             <div className="space-y-4">
@@ -237,7 +299,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
           </div>
         );
 
-      case 3:
+      case 4:
         return (
           <div className="space-y-5">
             <div className="space-y-4">
@@ -308,7 +370,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
           </div>
         );
 
-      case 4:
+      case 5:
         return (
           <div className="space-y-5">
             <div className="space-y-4">
@@ -381,7 +443,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
           </div>
         );
 
-      case 5:
+      case 6:
         return (
           <div className="space-y-5">
             <div className="space-y-4">
@@ -467,7 +529,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
           </div>
         );
 
-      case 6:
+      case 7:
         return (
           <div className="space-y-5">
             <div className="space-y-4">
@@ -611,7 +673,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                 {/* Center content */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-lg sm:text-xl md:text-2xl font-bold text-primary">{currentStep}</span>
-                  <span className="text-[10px] md:text-xs text-muted-foreground">/ 6</span>
+                  <span className="text-[10px] md:text-xs text-muted-foreground">/ 7</span>
                 </div>
               </div>
 
@@ -666,7 +728,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                 <span className="text-sm sm:text-base">Précédent</span>
               </Button>
 
-              {currentStep < 6 ? (
+              {currentStep < 7 ? (
                 <Button
                   onClick={nextStep}
                   className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary to-cyan-500 text-primary-foreground hover:from-primary/90 hover:to-cyan-500/90 shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_30px_rgba(56,189,248,0.5)] transition-all duration-300"
