@@ -33,7 +33,7 @@ const Contact = () => {
               variant="outline"
               className="border-border text-foreground hover:bg-secondary rounded-full px-8 py-6 text-base font-medium"
             >
-              contact@flowai.com
+              contact@focuseia.com
             </Button>
           </div>
         </div>

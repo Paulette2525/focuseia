@@ -14,7 +14,7 @@ const Footer = () => {
           <a href="#" className="flex items-center gap-2 group">
             <div className="w-2.5 h-2.5 rounded-full bg-primary transition-transform group-hover:scale-110" />
             <span className="text-xl font-semibold text-foreground">
-              FLOW AI
+              FocuseIA
             </span>
           </a>
 
@@ -33,7 +33,7 @@ const Footer = () => {
 
           {/* Copyright */}
           <p className="text-muted-foreground text-sm">
-            © 2025 Flow AI. Tous droits réservés.
+            © 2025 FocuseIA. Tous droits réservés.
           </p>
         </div>
       </div>
