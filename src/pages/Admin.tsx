@@ -3,9 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Users, Mail, Phone, Building2, RefreshCw, Target, Settings, Brain, UserCheck, CalendarCheck } from "lucide-react";
+import { Eye, Users, Mail, Phone, Building2, RefreshCw, Target, Settings, Brain, UserCheck, CalendarCheck, Trash2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface Prospect {
   id: string;
@@ -45,6 +47,7 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchProspects = async () => {
     setLoading(true);
@@ -68,6 +71,26 @@ const Admin = () => {
   const openDetail = (prospect: Prospect) => {
     setSelectedProspect(prospect);
     setDetailOpen(true);
+  };
+
+  const handleDelete = async (prospect: Prospect) => {
+    setDeletingId(prospect.id);
+    const { error } = await supabase
+      .from("prospects")
+      .delete()
+      .eq("id", prospect.id);
+
+    if (error) {
+      console.error("Erreur lors de la suppression:", error);
+      toast.error("Erreur lors de la suppression du prospect");
+    } else {
+      toast.success(`Prospect ${prospect.full_name} supprimé`);
+      setProspects((prev) => prev.filter((p) => p.id !== prospect.id));
+      if (selectedProspect?.id === prospect.id) {
+        setDetailOpen(false);
+      }
+    }
+    setDeletingId(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -161,8 +184,8 @@ const Admin = () => {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <span className="text-xs text-muted-foreground whitespace-nowrap hidden sm:inline">
                         {formatDate(prospect.created_at)}
                       </span>
                       <Button
@@ -172,8 +195,40 @@ const Admin = () => {
                         className="gap-2"
                       >
                         <Eye className="h-4 w-4" />
-                        Voir plus
+                        <span className="hidden sm:inline">Voir plus</span>
                       </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            disabled={deletingId === prospect.id}
+                          >
+                            {deletingId === prospect.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Supprimer ce prospect ?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Êtes-vous sûr de vouloir supprimer <strong>{prospect.full_name}</strong> ? Cette action est irréversible.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(prospect)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Supprimer
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </CardContent>
