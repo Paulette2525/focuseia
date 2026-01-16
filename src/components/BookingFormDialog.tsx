@@ -186,76 +186,83 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
   };
 
   const renderConfirmation = () => (
-    <div className="flex flex-col items-center justify-center h-full px-4 py-8 text-center space-y-6">
-      {/* Success Icon with Animation */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
-        <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-primary to-cyan-400 flex items-center justify-center shadow-[0_0_40px_rgba(56,189,248,0.4)]">
-          <CheckCircle2 className="w-12 h-12 sm:w-16 sm:h-16 text-primary-foreground" />
-        </div>
-        <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-yellow-400 animate-bounce" />
-      </div>
+    <div className="flex flex-col h-full min-h-0">
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-6 py-4 sm:py-6 custom-scrollbar">
+        <div className="flex flex-col items-center text-center space-y-4 sm:space-y-5">
+          {/* Success Icon with Animation */}
+          <div className="relative flex-shrink-0">
+            <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-primary to-cyan-400 flex items-center justify-center shadow-[0_0_30px_rgba(56,189,248,0.4)]">
+              <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground" />
+            </div>
+            <Sparkles className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 text-yellow-400 animate-bounce" />
+          </div>
 
-      {/* Success Message */}
-      <div className="space-y-3">
-        <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent">
-          Demande envoyée avec succès !
-        </h2>
-        <p className="text-muted-foreground text-sm sm:text-base max-w-md">
-          Merci <span className="text-primary font-semibold">{formData.fullName}</span> pour votre confiance !
-        </p>
-      </div>
-
-      {/* Details Card */}
-      <div className="w-full max-w-md bg-primary/5 border border-primary/20 rounded-xl p-4 sm:p-6 space-y-4">
-        <div className="flex items-center gap-3 text-left">
-          <CalendarCheck className="w-6 h-6 text-primary flex-shrink-0" />
-          <div>
-            <p className="text-foreground font-medium text-sm sm:text-base">
-              Séance d'audit gratuite
-            </p>
-            <p className="text-muted-foreground text-xs sm:text-sm">
-              Nous vous contacterons très prochainement pour planifier votre première séance.
+          {/* Success Message */}
+          <div className="space-y-2">
+            <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent">
+              Demande envoyée avec succès !
+            </h2>
+            <p className="text-muted-foreground text-xs sm:text-sm max-w-md">
+              Merci <span className="text-primary font-semibold">{formData.fullName}</span> pour votre confiance !
             </p>
           </div>
-        </div>
 
-        <div className="border-t border-primary/10 pt-4">
-          <p className="text-muted-foreground text-xs sm:text-sm">
-            Un email de confirmation sera envoyé à :
-          </p>
-          <p className="text-primary font-medium mt-1 text-sm sm:text-base">
-            {formData.email}
-          </p>
+          {/* Details Card */}
+          <div className="w-full max-w-md bg-primary/5 border border-primary/20 rounded-xl p-3 sm:p-4 space-y-3">
+            <div className="flex items-center gap-3 text-left">
+              <CalendarCheck className="w-5 h-5 text-primary flex-shrink-0" />
+              <div>
+                <p className="text-foreground font-medium text-xs sm:text-sm">
+                  Séance d'audit gratuite
+                </p>
+                <p className="text-muted-foreground text-[10px] sm:text-xs">
+                  Nous vous contacterons très prochainement pour planifier votre première séance.
+                </p>
+              </div>
+            </div>
+
+            <div className="border-t border-primary/10 pt-3">
+              <p className="text-muted-foreground text-[10px] sm:text-xs">
+                Un email de confirmation sera envoyé à :
+              </p>
+              <p className="text-primary font-medium mt-1 text-xs sm:text-sm break-all">
+                {formData.email}
+              </p>
+            </div>
+          </div>
+
+          {/* What's Next */}
+          <div className="space-y-2 text-left w-full max-w-md">
+            <h3 className="text-foreground font-semibold text-xs sm:text-sm">Prochaines étapes :</h3>
+            <ul className="space-y-1.5 text-muted-foreground text-[10px] sm:text-xs">
+              <li className="flex items-start gap-2">
+                <span className="text-primary font-bold">1.</span>
+                Notre équipe analyse votre dossier
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary font-bold">2.</span>
+                Nous vous contactons sous 24-48h
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary font-bold">3.</span>
+                Nous planifions ensemble votre séance d'audit gratuite
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
-      {/* What's Next */}
-      <div className="space-y-2 text-left w-full max-w-md">
-        <h3 className="text-foreground font-semibold text-sm sm:text-base">Prochaines étapes :</h3>
-        <ul className="space-y-2 text-muted-foreground text-xs sm:text-sm">
-          <li className="flex items-start gap-2">
-            <span className="text-primary font-bold">1.</span>
-            Notre équipe analyse votre dossier
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-primary font-bold">2.</span>
-            Nous vous contactons sous 24-48h
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-primary font-bold">3.</span>
-            Nous planifions ensemble votre séance d'audit gratuite
-          </li>
-        </ul>
+      {/* Close Button - Fixed at bottom */}
+      <div className="flex-shrink-0 p-4 sm:p-6 pt-3 border-t border-primary/10 bg-background/80 backdrop-blur-sm">
+        <Button
+          onClick={handleCloseDialog}
+          className="w-full h-10 sm:h-12 bg-gradient-to-r from-primary to-cyan-500 text-primary-foreground hover:from-primary/90 hover:to-cyan-500/90 shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_30px_rgba(56,189,248,0.5)] transition-all duration-300"
+        >
+          <span className="text-sm sm:text-base">Fermer</span>
+        </Button>
       </div>
-
-      {/* Close Button */}
-      <Button
-        onClick={handleCloseDialog}
-        className="w-full max-w-md h-12 bg-gradient-to-r from-primary to-cyan-500 text-primary-foreground hover:from-primary/90 hover:to-cyan-500/90 shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_30px_rgba(56,189,248,0.5)] transition-all duration-300"
-      >
-        <span className="text-sm sm:text-base">Fermer</span>
-      </Button>
     </div>
   );
 
