@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, ArrowLeft, Send, Building2, Target, Settings, Brain, UserCheck, CalendarCheck, Rocket, User } from "lucide-react";
-
+import { ArrowRight, ArrowLeft, Send, Building2, Target, Settings, Brain, UserCheck, CalendarCheck, Rocket, User, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 interface BookingFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -134,7 +135,9 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const handleSubmit = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
     const firstInvalid = getFirstInvalidStep();
     if (firstInvalid) {
       setCurrentStep(firstInvalid);
@@ -142,10 +145,72 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
       return;
     }
 
-    console.log("Form submitted:", formData);
-    alert("Merci ! Nous vous contacterons très prochainement pour planifier votre séance gratuite.");
-    onOpenChange(false);
-    setCurrentStep(1);
+    setIsSubmitting(true);
+
+    try {
+      const { error: insertError } = await supabase.from("prospects").insert({
+        full_name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        business_type: formData.sector || formData.companyName,
+        team_size: formData.employeeCount,
+        main_challenges: formData.growthLimit,
+        growth_vision: formData.vision2to3Years,
+        desired_revenue: formData.noChangeConsequence,
+        time_savings: formData.timeConsumingTasks,
+        manual_tasks: formData.humanDependentTasks,
+        current_ai_tools: formData.currentAITools,
+        is_decision_maker: formData.isDecisionMaker,
+        previous_investments: formData.previousInvestments,
+        project_priority: formData.projectPriority,
+        ready_to_change: formData.readyToChange,
+      });
+
+      if (insertError) {
+        console.error("Erreur lors de l'enregistrement:", insertError);
+        toast.error("Une erreur est survenue. Veuillez réessayer.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      toast.success("Merci ! Nous vous contacterons très prochainement pour planifier votre séance gratuite.");
+      onOpenChange(false);
+      setCurrentStep(1);
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        companyName: "",
+        role: "",
+        companyAge: "",
+        employeeCount: "",
+        sector: "",
+        vision2to3Years: "",
+        growthLimit: "",
+        speedBlocker: "",
+        noChangeConsequence: "",
+        timeConsumingTasks: "",
+        humanDependentTasks: "",
+        errorProneAreas: "",
+        unstructuredProcesses: "",
+        currentAITools: "",
+        aiToolsUsage: "",
+        aiFrustrations: "",
+        topAutomationPriority: "",
+        isDecisionMaker: "",
+        previousInvestments: "",
+        failureCriteria: "",
+        projectPriority: "",
+        whyNow: "",
+        sessionExpectations: "",
+        readyToChange: "",
+      });
+    } catch (err) {
+      console.error("Erreur inattendue:", err);
+      toast.error("Une erreur inattendue est survenue.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const progressPercentage = (currentStep / 7) * 100;
@@ -872,12 +937,21 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
               ) : (
                 <Button
                   onClick={handleSubmit}
-                  disabled={!canGoNext}
+                  disabled={!canGoNext || isSubmitting}
                   className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary via-cyan-500 to-primary text-primary-foreground shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:shadow-[0_0_40px_rgba(56,189,248,0.6)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <Rocket className="w-4 h-4 mr-1 sm:mr-2" />
-                  <span className="text-sm sm:text-base">Envoyer</span>
-                  <Send className="w-4 h-4 ml-1 sm:ml-2" />
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-1 sm:mr-2 animate-spin" />
+                      <span className="text-sm sm:text-base">Envoi...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Rocket className="w-4 h-4 mr-1 sm:mr-2" />
+                      <span className="text-sm sm:text-base">Envoyer</span>
+                      <Send className="w-4 h-4 ml-1 sm:ml-2" />
+                    </>
+                  )}
                 </Button>
               )}
             </div>
