@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, ArrowLeft, Send, Building2, Target, Settings, Brain, UserCheck, CalendarCheck, Rocket, User, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, Send, Building2, Target, Settings, Brain, UserCheck, CalendarCheck, Rocket, User, Loader2, CheckCircle, Calendar, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 interface BookingFormDialogProps {
@@ -26,6 +26,9 @@ const steps = [
 const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedName, setSubmittedName] = useState("");
+  const [submittedEmail, setSubmittedEmail] = useState("");
   const [formData, setFormData] = useState({
     // Step 1 - Coordonnées
     fullName: "",
@@ -185,38 +188,10 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
         return;
       }
 
-      toast.success("Merci ! Nous vous contacterons très prochainement pour planifier votre séance gratuite.");
-      onOpenChange(false);
-      setCurrentStep(1);
-      setFormData({
-        fullName: "",
-        email: "",
-        phone: "",
-        companyName: "",
-        role: "",
-        companyAge: "",
-        employeeCount: "",
-        sector: "",
-        vision2to3Years: "",
-        growthLimit: "",
-        speedBlocker: "",
-        noChangeConsequence: "",
-        timeConsumingTasks: "",
-        humanDependentTasks: "",
-        errorProneAreas: "",
-        unstructuredProcesses: "",
-        currentAITools: "",
-        aiToolsUsage: "",
-        aiFrustrations: "",
-        topAutomationPriority: "",
-        isDecisionMaker: "",
-        previousInvestments: "",
-        failureCriteria: "",
-        projectPriority: "",
-        whyNow: "",
-        sessionExpectations: "",
-        readyToChange: "",
-      });
+      // Show success screen
+      setSubmittedName(formData.fullName);
+      setSubmittedEmail(formData.email);
+      setIsSubmitted(true);
     } catch (err) {
       console.error("Erreur inattendue:", err);
       toast.error("Une erreur inattendue est survenue.");
@@ -802,8 +777,148 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     }
   };
 
+  const handleClose = () => {
+    onOpenChange(false);
+    // Reset after animation
+    setTimeout(() => {
+      setIsSubmitted(false);
+      setCurrentStep(1);
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        companyName: "",
+        role: "",
+        companyAge: "",
+        employeeCount: "",
+        sector: "",
+        vision2to3Years: "",
+        growthLimit: "",
+        speedBlocker: "",
+        noChangeConsequence: "",
+        timeConsumingTasks: "",
+        humanDependentTasks: "",
+        errorProneAreas: "",
+        unstructuredProcesses: "",
+        currentAITools: "",
+        aiToolsUsage: "",
+        aiFrustrations: "",
+        topAutomationPriority: "",
+        isDecisionMaker: "",
+        previousInvestments: "",
+        failureCriteria: "",
+        projectPriority: "",
+        whyNow: "",
+        sessionExpectations: "",
+        readyToChange: "",
+      });
+    }, 300);
+  };
+
+  // Success Screen
+  if (isSubmitted) {
+    return (
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] bg-background/95 backdrop-blur-xl border border-primary/20 shadow-[0_0_50px_rgba(56,189,248,0.15)] p-0 overflow-hidden">
+          {/* Animated Background Effects */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px]">
+              <div className="absolute inset-0 animate-[spin_20s_linear_infinite]">
+                <div className="absolute top-0 left-1/2 w-2 h-2 bg-primary/40 rounded-full blur-sm" />
+                <div className="absolute bottom-0 left-1/2 w-1.5 h-1.5 bg-cyan-400/30 rounded-full blur-sm" />
+              </div>
+            </div>
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(56,189,248,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
+            <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/20 rounded-full blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl" />
+          </div>
+
+          <div className="relative z-10 p-6 sm:p-8 md:p-10 overflow-y-auto max-h-[85vh]">
+            {/* Success Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="relative">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-primary/20 to-cyan-500/20 flex items-center justify-center">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-primary to-cyan-500 flex items-center justify-center shadow-[0_0_40px_rgba(56,189,248,0.5)]">
+                    <CheckCircle className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-primary-foreground" />
+                  </div>
+                </div>
+                <div className="absolute inset-0 w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full bg-primary/20 blur-xl animate-pulse" />
+              </div>
+            </div>
+
+            {/* Title */}
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center bg-gradient-to-r from-primary via-cyan-400 to-primary bg-clip-text text-transparent mb-3">
+              Demande envoyée avec succès !
+            </h2>
+
+            {/* Personalized message */}
+            <p className="text-center text-muted-foreground text-base sm:text-lg mb-6 sm:mb-8">
+              Merci <span className="text-primary font-semibold">{submittedName}</span> pour votre confiance !
+            </p>
+
+            {/* Audit session card */}
+            <div className="bg-background/50 border border-primary/20 rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
+                    Séance d'audit gratuite
+                  </h3>
+                  <p className="text-muted-foreground text-sm sm:text-base">
+                    Nous vous contacterons très prochainement pour planifier votre première séance.
+                  </p>
+                </div>
+              </div>
+
+              {/* Email confirmation */}
+              <div className="mt-5 pt-5 border-t border-primary/10 text-center">
+                <p className="text-muted-foreground text-sm sm:text-base mb-2">
+                  Un email de confirmation sera envoyé à :
+                </p>
+                <p className="text-primary font-semibold text-base sm:text-lg">
+                  {submittedEmail}
+                </p>
+              </div>
+            </div>
+
+            {/* Next steps */}
+            <div className="mb-6 sm:mb-8">
+              <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-4">
+                Prochaines étapes :
+              </h3>
+              <div className="space-y-3">
+                {[
+                  "Notre équipe analyse votre dossier",
+                  "Nous vous contactons sous 24-48h",
+                  "Nous planifions ensemble votre séance d'audit gratuite",
+                ].map((step, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0">
+                      <span className="text-primary font-semibold text-sm">{index + 1}.</span>
+                    </div>
+                    <p className="text-muted-foreground text-sm sm:text-base">{step}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Close button */}
+            <Button
+              onClick={handleClose}
+              className="w-full h-12 sm:h-14 bg-gradient-to-r from-primary to-cyan-500 text-primary-foreground font-semibold text-base sm:text-lg shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:shadow-[0_0_40px_rgba(56,189,248,0.6)] transition-all duration-300"
+            >
+              Fermer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl w-[95vw] h-[90vh] sm:h-[85vh] flex flex-col bg-background/95 backdrop-blur-xl border border-primary/20 shadow-[0_0_50px_rgba(56,189,248,0.15)] p-0 overflow-hidden">
         {/* Animated Background Effects */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
