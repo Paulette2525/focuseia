@@ -4,9 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Users, Mail, Phone, Building2, RefreshCw } from "lucide-react";
+import { Eye, Users, Mail, Phone, Building2, RefreshCw, Target, Settings, Brain, UserCheck, CalendarCheck } from "lucide-react";
 
 interface Prospect {
   id: string;
@@ -14,17 +13,29 @@ interface Prospect {
   full_name: string;
   email: string;
   phone: string;
-  business_type: string | null;
+  company_name: string | null;
+  role: string | null;
+  company_age: string | null;
   team_size: string | null;
-  main_challenges: string | null;
+  sector: string | null;
   growth_vision: string | null;
-  desired_revenue: string | null;
+  main_challenges: string | null;
+  speed_blocker: string | null;
+  no_change_consequence: string | null;
   time_savings: string | null;
   manual_tasks: string | null;
+  error_prone_areas: string | null;
+  unstructured_processes: string | null;
   current_ai_tools: string | null;
+  ai_tools_usage: string | null;
+  ai_frustrations: string | null;
+  top_automation_priority: string | null;
   is_decision_maker: string | null;
   previous_investments: string | null;
+  failure_criteria: string | null;
   project_priority: string | null;
+  why_now: string | null;
+  session_expectations: string | null;
   ready_to_change: string | null;
   created_at: string;
 }
@@ -45,7 +56,7 @@ const Admin = () => {
     if (error) {
       console.error("Erreur lors du chargement des prospects:", error);
     } else {
-      setProspects(data || []);
+      setProspects((data as Prospect[]) || []);
     }
     setLoading(false);
   };
@@ -71,8 +82,8 @@ const Admin = () => {
 
   const getSummary = (prospect: Prospect) => {
     const parts = [];
-    if (prospect.business_type) parts.push(prospect.business_type);
-    if (prospect.team_size) parts.push(`${prospect.team_size} pers.`);
+    if (prospect.sector) parts.push(prospect.sector);
+    if (prospect.team_size) parts.push(`${prospect.team_size} employés`);
     if (prospect.project_priority) parts.push(`Priorité: ${prospect.project_priority}`);
     return parts.length > 0 ? parts.join(" • ") : "Aucun résumé disponible";
   };
@@ -82,7 +93,7 @@ const Admin = () => {
     return (
       <div className="py-3">
         <p className="text-sm font-medium text-muted-foreground mb-1">{label}</p>
-        <p className="text-foreground">{value}</p>
+        <p className="text-foreground whitespace-pre-wrap">{value}</p>
       </div>
     );
   };
@@ -171,7 +182,7 @@ const Admin = () => {
           </div>
         )}
 
-        {/* Detail Modal */}
+        {/* Modal Détails */}
         <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
           <DialogContent className="max-w-2xl max-h-[90vh]">
             <DialogHeader>
@@ -185,7 +196,7 @@ const Admin = () => {
             <ScrollArea className="max-h-[70vh] pr-4">
               {selectedProspect && (
                 <div className="space-y-6">
-                  {/* Contact Info */}
+                  {/* Coordonnées */}
                   <Card>
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base flex items-center gap-2">
@@ -196,6 +207,10 @@ const Admin = () => {
                     <CardContent className="pt-0">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
+                          <p className="text-sm font-medium text-muted-foreground">Nom complet</p>
+                          <p className="text-foreground">{selectedProspect.full_name}</p>
+                        </div>
+                        <div>
                           <p className="text-sm font-medium text-muted-foreground">Email</p>
                           <p className="text-foreground">{selectedProspect.email}</p>
                         </div>
@@ -203,69 +218,106 @@ const Admin = () => {
                           <p className="text-sm font-medium text-muted-foreground">Téléphone</p>
                           <p className="text-foreground">{selectedProspect.phone}</p>
                         </div>
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Date de soumission</p>
+                          <p className="text-foreground">{formatDate(selectedProspect.created_at)}</p>
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-4">
-                        Soumis le {formatDate(selectedProspect.created_at)}
-                      </p>
                     </CardContent>
                   </Card>
 
-                  {/* Business Info */}
+                  {/* Identité & Contexte */}
                   <Card>
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base flex items-center gap-2">
                         <Building2 className="h-4 w-4" />
-                        Informations Entreprise
+                        Identité & Contexte
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0 divide-y divide-border">
-                      <DetailRow label="Type d'activité" value={selectedProspect.business_type} />
-                      <DetailRow label="Taille de l'équipe" value={selectedProspect.team_size} />
-                      <DetailRow label="Principaux défis" value={selectedProspect.main_challenges} />
+                      <DetailRow label="Nom de l'entreprise" value={selectedProspect.company_name} />
+                      <DetailRow label="Rôle dans l'entreprise" value={selectedProspect.role} />
+                      <DetailRow label="Ancienneté de l'entreprise" value={selectedProspect.company_age} />
+                      <DetailRow label="Nombre d'employés" value={selectedProspect.team_size} />
+                      <DetailRow label="Secteur d'activité" value={selectedProspect.sector} />
                     </CardContent>
                   </Card>
 
-                  {/* Vision */}
+                  {/* Vision & Ambition */}
                   <Card>
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-base">Vision & Ambition</CardTitle>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Target className="h-4 w-4" />
+                        Vision & Ambition
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0 divide-y divide-border">
-                      <DetailRow label="Vision de croissance" value={selectedProspect.growth_vision} />
-                      <DetailRow label="Revenus souhaités" value={selectedProspect.desired_revenue} />
+                      <DetailRow label="Vision à 2-3 ans" value={selectedProspect.growth_vision} />
+                      <DetailRow label="Limite de croissance" value={selectedProspect.main_challenges} />
+                      <DetailRow label="Ce qui empêche d'aller plus vite" value={selectedProspect.speed_blocker} />
+                      <DetailRow label="Conséquences si rien ne change" value={selectedProspect.no_change_consequence} />
                     </CardContent>
                   </Card>
 
-                  {/* Operations */}
+                  {/* Organisation */}
                   <Card>
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-base">Organisation</CardTitle>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        Organisation
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0 divide-y divide-border">
-                      <DetailRow label="Économie de temps recherchée" value={selectedProspect.time_savings} />
-                      <DetailRow label="Tâches manuelles" value={selectedProspect.manual_tasks} />
+                      <DetailRow label="Tâches les plus chronophages" value={selectedProspect.time_savings} />
+                      <DetailRow label="Tâches trop dépendantes de l'humain" value={selectedProspect.manual_tasks} />
+                      <DetailRow label="Zones d'erreurs ou de lenteurs" value={selectedProspect.error_prone_areas} />
+                      <DetailRow label="Processus mal structurés" value={selectedProspect.unstructured_processes} />
                     </CardContent>
                   </Card>
 
-                  {/* AI & Automation */}
+                  {/* IA & Automatisation */}
                   <Card>
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-base">IA & Automatisation</CardTitle>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Brain className="h-4 w-4" />
+                        IA & Automatisation
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0 divide-y divide-border">
-                      <DetailRow label="Outils IA actuels" value={selectedProspect.current_ai_tools} />
+                      <DetailRow label="Utilise déjà des outils IA" value={selectedProspect.current_ai_tools} />
+                      <DetailRow label="Comment sont utilisés les outils IA" value={selectedProspect.ai_tools_usage} />
+                      <DetailRow label="Frustrations avec les outils actuels" value={selectedProspect.ai_frustrations} />
+                      <DetailRow label="Priorité d'automatisation" value={selectedProspect.top_automation_priority} />
                     </CardContent>
                   </Card>
 
-                  {/* Decision */}
+                  {/* Décision & Engagement */}
                   <Card>
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-base">Décision & Engagement</CardTitle>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <UserCheck className="h-4 w-4" />
+                        Décision & Engagement
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0 divide-y divide-border">
-                      <DetailRow label="Décideur" value={selectedProspect.is_decision_maker} />
+                      <DetailRow label="Est décideur" value={selectedProspect.is_decision_maker} />
                       <DetailRow label="Investissements précédents" value={selectedProspect.previous_investments} />
+                      <DetailRow label="Critères d'échec" value={selectedProspect.failure_criteria} />
                       <DetailRow label="Priorité du projet" value={selectedProspect.project_priority} />
+                    </CardContent>
+                  </Card>
+
+                  {/* Séance Gratuite */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <CalendarCheck className="h-4 w-4" />
+                        Séance Gratuite
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 divide-y divide-border">
+                      <DetailRow label="Pourquoi maintenant" value={selectedProspect.why_now} />
+                      <DetailRow label="Attentes de la séance" value={selectedProspect.session_expectations} />
                       <DetailRow label="Prêt à changer" value={selectedProspect.ready_to_change} />
                     </CardContent>
                   </Card>
