@@ -33,7 +33,7 @@ const Header = () => {
           <a href="#" className="flex items-center gap-2 group">
             <div className="w-2.5 h-2.5 rounded-full bg-primary transition-transform group-hover:scale-110" />
             <span className="text-xl font-semibold text-foreground">
-              FLOW AI
+              FocuseIA
             </span>
           </a>
 
