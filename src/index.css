@@ -672,3 +672,102 @@
   0%, 100% { transform: translateY(-100%); }
   50% { transform: translateY(100%); }
 }
+
+/* ========== Space Form Styles ========== */
+
+/* Custom scrollbar for space form */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: hsl(var(--background) / 0.5);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, hsl(var(--primary) / 0.5), hsl(175 70% 50% / 0.5));
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, hsl(var(--primary)), hsl(175 70% 50%));
+}
+
+/* Space-themed input styles */
+.space-input {
+  @apply w-full rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground/50;
+  background: linear-gradient(135deg, hsl(var(--background) / 0.8), hsl(var(--card) / 0.6));
+  border: 1px solid hsl(var(--primary) / 0.2);
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+}
+
+.space-input:focus {
+  outline: none;
+  border-color: hsl(var(--primary) / 0.6);
+  box-shadow: 
+    0 0 0 3px hsl(var(--primary) / 0.1),
+    0 0 20px hsl(var(--primary) / 0.2),
+    inset 0 0 20px hsl(var(--primary) / 0.05);
+  background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--card) / 0.8));
+}
+
+.space-input:hover:not(:focus) {
+  border-color: hsl(var(--primary) / 0.4);
+  box-shadow: 0 0 15px hsl(var(--primary) / 0.1);
+}
+
+/* Space-themed textarea */
+.space-textarea {
+  @apply w-full rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground/50 min-h-[80px] resize-none;
+  background: linear-gradient(135deg, hsl(var(--background) / 0.8), hsl(var(--card) / 0.6));
+  border: 1px solid hsl(var(--primary) / 0.2);
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.space-textarea:focus {
+  outline: none;
+  border-color: hsl(var(--primary) / 0.6);
+  box-shadow: 
+    0 0 0 3px hsl(var(--primary) / 0.1),
+    0 0 20px hsl(var(--primary) / 0.2),
+    inset 0 0 20px hsl(var(--primary) / 0.05);
+  background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--card) / 0.8));
+}
+
+.space-textarea:hover:not(:focus) {
+  border-color: hsl(var(--primary) / 0.4);
+  box-shadow: 0 0 15px hsl(var(--primary) / 0.1);
+}
+
+/* Input glow effect */
+.input-glow {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.3), hsl(175 70% 50% / 0.3));
+  filter: blur(8px);
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.group:focus-within .input-glow {
+  opacity: 1;
+}
+
+/* Orbiting animation for dialog */
+@keyframes orbit-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+  .space-input,
+  .space-textarea {
+    @apply px-3 py-2.5 text-sm;
+  }
+}
