@@ -413,6 +413,202 @@
 
 @property --portal-angle {
   syntax: '<angle>';
+}
+
+/* ========== Quantum Portal Effects ========== */
+
+/* Quantum Grid Background */
+.quantum-grid {
+  background-image: 
+    radial-gradient(circle at 1px 1px, hsl(280 70% 60% / 0.08) 1px, transparent 0),
+    radial-gradient(circle at 1px 1px, hsl(var(--primary) / 0.05) 1px, transparent 0);
+  background-size: 60px 60px, 30px 30px;
+  animation: grid-move 30s linear infinite;
+}
+
+/* Orbiting Particles */
+.quantum-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  box-shadow: 
+    0 0 10px hsl(var(--primary) / 0.8),
+    0 0 20px hsl(var(--primary) / 0.4),
+    0 0 30px hsl(280 70% 60% / 0.3);
+  animation: quantum-orbit linear infinite;
+}
+
+.quantum-particle::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 2px;
+  background: linear-gradient(90deg, hsl(var(--primary) / 0.6), transparent);
+  transform: translateX(-100%);
+  border-radius: 50%;
+}
+
+@keyframes quantum-orbit {
+  0% { transform: rotate(0deg) translateX(20px) rotate(0deg); opacity: 0.4; }
+  25% { opacity: 1; }
+  50% { transform: rotate(180deg) translateX(20px) rotate(-180deg); opacity: 0.4; }
+  75% { opacity: 1; }
+  100% { transform: rotate(360deg) translateX(20px) rotate(-360deg); opacity: 0.4; }
+}
+
+/* Quantum Portal Container */
+.quantum-portal {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Concentric Rings */
+.quantum-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: linear-gradient(var(--background), var(--background)) padding-box,
+              conic-gradient(
+                from var(--quantum-angle, 0deg),
+                hsl(var(--primary) / 0.6),
+                hsl(280 70% 60% / 0.4),
+                hsl(var(--glow-teal) / 0.3),
+                hsl(var(--primary) / 0.6)
+              ) border-box;
+  animation: quantum-ring-rotate linear infinite;
+}
+
+.quantum-ring::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 0%,
+    hsl(var(--primary) / 0.4) 0%,
+    transparent 30%
+  );
+  animation: quantum-glow-rotate 4s linear infinite;
+}
+
+@keyframes quantum-ring-rotate {
+  0% { --quantum-angle: 0deg; transform: rotate(0deg); }
+  100% { --quantum-angle: 360deg; transform: rotate(360deg); }
+}
+
+@keyframes quantum-glow-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@property --quantum-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* Central Quantum Core */
+.quantum-core {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+}
+
+.quantum-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid hsl(var(--primary) / 0.5);
+  animation: quantum-pulse-expand 2s ease-out infinite;
+}
+
+@keyframes quantum-pulse-expand {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+    border-color: hsl(var(--primary) / 0.6);
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+    border-color: hsl(280 70% 60% / 0);
+  }
+}
+
+/* Energy Line Animation */
+@keyframes quantum-line-pulse {
+  0%, 100% { opacity: 0.2; transform: translate(-50%, -50%) rotate(inherit) scaleX(0.5); }
+  50% { opacity: 0.8; transform: translate(-50%, -50%) rotate(inherit) scaleX(1); }
+}
+
+/* Gravitational Distortion */
+.quantum-distortion {
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent 20%,
+    hsl(280 70% 60% / 0.05) 40%,
+    hsl(var(--glow-teal) / 0.08) 60%,
+    hsl(var(--primary) / 0.05) 80%,
+    transparent 100%
+  );
+  filter: blur(20px);
+  animation: quantum-distort 8s ease-in-out infinite;
+}
+
+@keyframes quantum-distort {
+  0%, 100% { 
+    transform: scale(1) rotate(0deg);
+    filter: blur(20px) hue-rotate(0deg);
+  }
+  50% { 
+    transform: scale(1.1) rotate(180deg);
+    filter: blur(30px) hue-rotate(30deg);
+  }
+}
+
+/* Info Connection Line */
+.quantum-info-line {
+  width: 2px;
+  height: 30px;
+  margin: 0 auto;
+  background: linear-gradient(
+    to bottom,
+    hsl(var(--primary) / 0.6),
+    hsl(280 70% 60% / 0.4),
+    hsl(var(--glow-teal) / 0.2)
+  );
+  animation: quantum-line-glow 2s ease-in-out infinite;
+}
+
+@keyframes quantum-line-glow {
+  0%, 100% { 
+    box-shadow: 0 0 5px hsl(var(--primary) / 0.3);
+    opacity: 0.6;
+  }
+  50% { 
+    box-shadow: 0 0 15px hsl(var(--primary) / 0.6);
+    opacity: 1;
+  }
+}
+
+/* Hover Effects */
+.group:hover .quantum-ring {
+  animation-duration: 5s !important;
+  border-width: 2px;
+}
+
+.group:hover .quantum-core {
+  transform: scale(1.1);
+  transition: transform 0.5s ease;
+}
+
+.group:hover .quantum-distortion {
+  animation-duration: 4s;
   initial-value: 0deg;
   inherits: false;
 }
