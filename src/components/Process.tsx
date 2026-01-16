@@ -30,11 +30,6 @@ const logos = [
   "OpenAI",
   "Claude",
   "Mistral",
-  "Gemini",
-  "LLaMA",
-  "Hugging Face",
-  "TensorFlow",
-  "PyTorch",
 ];
 
 const Process = () => {
