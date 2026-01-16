@@ -24,6 +24,7 @@ const steps = [
 
 const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     // Step 1 - Coordonnées
     fullName: "",
@@ -61,19 +62,86 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     readyToChange: "",
   });
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
+    setError(null);
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const isEmailValid = (value: string) => {
+    const v = value.trim();
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  };
+
+  const isPhoneValid = (value: string) => {
+    const digits = value.replace(/\D/g, "");
+    return digits.length >= 8;
+  };
+
+  const validateStep = (step: number): string | null => {
+    const requiredByStep: Record<number, Array<keyof typeof formData>> = {
+      1: ["fullName", "email", "phone"],
+      2: ["companyName", "role", "companyAge", "employeeCount", "sector"],
+      3: ["vision2to3Years", "growthLimit", "speedBlocker", "noChangeConsequence"],
+      4: ["timeConsumingTasks", "humanDependentTasks", "errorProneAreas", "unstructuredProcesses"],
+      5: ["currentAITools", "aiToolsUsage", "aiFrustrations", "topAutomationPriority"],
+      6: ["isDecisionMaker", "previousInvestments", "failureCriteria", "projectPriority"],
+      7: ["whyNow", "sessionExpectations", "readyToChange"],
+    };
+
+    const fields = requiredByStep[step] ?? [];
+
+    for (const field of fields) {
+      // Conditional: if no AI tools, aiToolsUsage can be skipped
+      if (step === 5 && field === "aiToolsUsage" && formData.currentAITools === "no") {
+        continue;
+      }
+
+      const value = String(formData[field] ?? "").trim();
+      if (!value) return "Merci de répondre à toutes les questions avant de continuer.";
+
+      if (step === 1 && field === "email" && !isEmailValid(value)) {
+        return "Merci d'entrer une adresse email valide.";
+      }
+      if (step === 1 && field === "phone" && !isPhoneValid(value)) {
+        return "Merci d'entrer un numéro de téléphone valide.";
+      }
+    }
+
+    return null;
+  };
+
+  const getFirstInvalidStep = (): number | null => {
+    for (let step = 1; step <= 7; step++) {
+      const err = validateStep(step);
+      if (err) return step;
+    }
+    return null;
+  };
+
+  const canGoNext = validateStep(currentStep) === null;
+
   const nextStep = () => {
+    const err = validateStep(currentStep);
+    if (err) {
+      setError(err);
+      return;
+    }
     if (currentStep < 7) setCurrentStep(currentStep + 1);
   };
 
   const prevStep = () => {
+    setError(null);
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
   const handleSubmit = () => {
+    const firstInvalid = getFirstInvalidStep();
+    if (firstInvalid) {
+      setCurrentStep(firstInvalid);
+      setError("Merci de répondre à toutes les questions avant d'envoyer le formulaire.");
+      return;
+    }
+
     console.log("Form submitted:", formData);
     alert("Merci ! Nous vous contacterons très prochainement pour planifier votre séance gratuite.");
     onOpenChange(false);
@@ -383,10 +451,25 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                   onValueChange={(value) => handleInputChange("currentAITools", value)}
                   className="space-y-2"
                 >
-                  {["Oui", "Non", "Partiellement"].map((option, i) => (
-                    <div key={i} className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio">
-                      <RadioGroupItem value={["yes", "no", "partially"][i]} id={`ai-${i}`} className="border-primary/50 text-primary" />
-                      <Label htmlFor={`ai-${i}`} className="text-muted-foreground cursor-pointer group-hover/radio:text-foreground transition-colors">{option}</Label>
+                  {[
+                    { value: "yes", label: "Oui" },
+                    { value: "no", label: "Non" },
+                    { value: "partially", label: "Partiellement" },
+                  ].map((option) => (
+                    <div
+                      key={option.value}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleInputChange("currentAITools", option.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") handleInputChange("currentAITools", option.value);
+                      }}
+                      className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio"
+                    >
+                      <RadioGroupItem value={option.value} id={`ai-${option.value}`} className="border-primary/50 text-primary" />
+                      <Label htmlFor={`ai-${option.value}`} className="text-muted-foreground cursor-pointer group-hover/radio:text-foreground transition-colors">
+                        {option.label}
+                      </Label>
                     </div>
                   ))}
                 </RadioGroup>
@@ -459,11 +542,22 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                   {[
                     { value: "yes", label: "Oui, entièrement" },
                     { value: "partial", label: "Partiellement, avec validation" },
-                    { value: "no", label: "Non, je dois consulter" }
+                    { value: "no", label: "Non, je dois consulter" },
                   ].map((option) => (
-                    <div key={option.value} className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio">
+                    <div
+                      key={option.value}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleInputChange("isDecisionMaker", option.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") handleInputChange("isDecisionMaker", option.value);
+                      }}
+                      className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio"
+                    >
                       <RadioGroupItem value={option.value} id={`decision-${option.value}`} className="border-primary/50 text-primary" />
-                      <Label htmlFor={`decision-${option.value}`} className="text-muted-foreground cursor-pointer group-hover/radio:text-foreground transition-colors">{option.label}</Label>
+                      <Label htmlFor={`decision-${option.value}`} className="text-muted-foreground cursor-pointer group-hover/radio:text-foreground transition-colors">
+                        {option.label}
+                      </Label>
                     </div>
                   ))}
                 </RadioGroup>
@@ -478,10 +572,24 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                   onValueChange={(value) => handleInputChange("previousInvestments", value)}
                   className="space-y-2"
                 >
-                  {["Oui", "Non"].map((option, i) => (
-                    <div key={i} className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio">
-                      <RadioGroupItem value={["yes", "no"][i]} id={`invest-${i}`} className="border-primary/50 text-primary" />
-                      <Label htmlFor={`invest-${i}`} className="text-muted-foreground cursor-pointer group-hover/radio:text-foreground transition-colors">{option}</Label>
+                  {[
+                    { value: "yes", label: "Oui" },
+                    { value: "no", label: "Non" },
+                  ].map((option) => (
+                    <div
+                      key={option.value}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleInputChange("previousInvestments", option.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") handleInputChange("previousInvestments", option.value);
+                      }}
+                      className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio"
+                    >
+                      <RadioGroupItem value={option.value} id={`invest-${option.value}`} className="border-primary/50 text-primary" />
+                      <Label htmlFor={`invest-${option.value}`} className="text-muted-foreground cursor-pointer group-hover/radio:text-foreground transition-colors">
+                        {option.label}
+                      </Label>
                     </div>
                   ))}
                 </RadioGroup>
@@ -513,14 +621,25 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                   className="grid grid-cols-2 gap-2"
                 >
                   {[
-                    { value: "low", label: "Faible", color: "text-muted-foreground" },
-                    { value: "medium", label: "Moyenne", color: "text-yellow-400" },
-                    { value: "high", label: "Élevée", color: "text-orange-400" },
-                    { value: "critical", label: "Critique", color: "text-red-400" }
+                    { value: "low", label: "Faible" },
+                    { value: "medium", label: "Moyenne" },
+                    { value: "high", label: "Élevée" },
+                    { value: "critical", label: "Critique" },
                   ].map((option) => (
-                    <div key={option.value} className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio">
+                    <div
+                      key={option.value}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleInputChange("projectPriority", option.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") handleInputChange("projectPriority", option.value);
+                      }}
+                      className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio"
+                    >
                       <RadioGroupItem value={option.value} id={`priority-${option.value}`} className="border-primary/50 text-primary" />
-                      <Label htmlFor={`priority-${option.value}`} className={`cursor-pointer group-hover/radio:text-foreground transition-colors ${option.color}`}>{option.label}</Label>
+                      <Label htmlFor={`priority-${option.value}`} className="text-muted-foreground cursor-pointer group-hover/radio:text-foreground transition-colors">
+                        {option.label}
+                      </Label>
                     </div>
                   ))}
                 </RadioGroup>
@@ -577,9 +696,18 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                   {[
                     { value: "yes", label: "Oui, absolument", icon: "🚀" },
                     { value: "maybe", label: "Peut-être, selon les recommandations", icon: "🤔" },
-                    { value: "no", label: "Non, je cherche des optimisations mineures", icon: "📊" }
+                    { value: "no", label: "Non, je cherche des optimisations mineures", icon: "📊" },
                   ].map((option) => (
-                    <div key={option.value} className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio">
+                    <div
+                      key={option.value}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleInputChange("readyToChange", option.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") handleInputChange("readyToChange", option.value);
+                      }}
+                      className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio"
+                    >
                       <RadioGroupItem value={option.value} id={`change-${option.value}`} className="border-primary/50 text-primary" />
                       <Label htmlFor={`change-${option.value}`} className="text-muted-foreground cursor-pointer group-hover/radio:text-foreground transition-colors flex items-center gap-2">
                         <span>{option.icon}</span> {option.label}
@@ -717,6 +845,10 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
 
           {/* Navigation Buttons - Fixed at bottom */}
           <div className="flex-shrink-0 p-4 sm:p-6 pt-3 sm:pt-4 border-t border-primary/10 bg-background/80 backdrop-blur-sm">
+            {error ? (
+              <p className="mb-3 text-sm text-destructive text-center">{error}</p>
+            ) : null}
+
             <div className="flex justify-between gap-3 sm:gap-4">
               <Button
                 variant="outline"
@@ -731,7 +863,8 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
               {currentStep < 7 ? (
                 <Button
                   onClick={nextStep}
-                  className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary to-cyan-500 text-primary-foreground hover:from-primary/90 hover:to-cyan-500/90 shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_30px_rgba(56,189,248,0.5)] transition-all duration-300"
+                  disabled={!canGoNext}
+                  className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary to-cyan-500 text-primary-foreground hover:from-primary/90 hover:to-cyan-500/90 shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_30px_rgba(56,189,248,0.5)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <span className="text-sm sm:text-base">Suivant</span>
                   <ArrowRight className="w-4 h-4 ml-1 sm:ml-2" />
@@ -739,10 +872,12 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
               ) : (
                 <Button
                   onClick={handleSubmit}
-                  className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary via-cyan-500 to-primary text-primary-foreground shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:shadow-[0_0_40px_rgba(56,189,248,0.6)] transition-all duration-300"
+                  disabled={!canGoNext}
+                  className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary via-cyan-500 to-primary text-primary-foreground shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:shadow-[0_0_40px_rgba(56,189,248,0.6)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Rocket className="w-4 h-4 mr-1 sm:mr-2" />
                   <span className="text-sm sm:text-base">Envoyer</span>
+                  <Send className="w-4 h-4 ml-1 sm:ml-2" />
                 </Button>
               )}
             </div>
