@@ -14,7 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      prospects: {
+        Row: {
+          business_type: string | null
+          created_at: string
+          current_ai_tools: string | null
+          desired_revenue: string | null
+          email: string
+          full_name: string
+          growth_vision: string | null
+          id: string
+          is_decision_maker: string | null
+          main_challenges: string | null
+          manual_tasks: string | null
+          numero: number
+          phone: string
+          previous_investments: string | null
+          project_priority: string | null
+          ready_to_change: string | null
+          team_size: string | null
+          time_savings: string | null
+        }
+        Insert: {
+          business_type?: string | null
+          created_at?: string
+          current_ai_tools?: string | null
+          desired_revenue?: string | null
+          email: string
+          full_name: string
+          growth_vision?: string | null
+          id?: string
+          is_decision_maker?: string | null
+          main_challenges?: string | null
+          manual_tasks?: string | null
+          numero?: number
+          phone: string
+          previous_investments?: string | null
+          project_priority?: string | null
+          ready_to_change?: string | null
+          team_size?: string | null
+          time_savings?: string | null
+        }
+        Update: {
+          business_type?: string | null
+          created_at?: string
+          current_ai_tools?: string | null
+          desired_revenue?: string | null
+          email?: string
+          full_name?: string
+          growth_vision?: string | null
+          id?: string
+          is_decision_maker?: string | null
+          main_challenges?: string | null
+          manual_tasks?: string | null
+          numero?: number
+          phone?: string
+          previous_investments?: string | null
+          project_priority?: string | null
+          ready_to_change?: string | null
+          team_size?: string | null
+          time_savings?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
