@@ -11,18 +11,6 @@ const projects = [
     description: "Système de tri et analyse automatique des CV",
     image: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=600&h=400&fit=crop",
   },
-  {
-    title: "Analyse Prédictive",
-    year: "2025",
-    description: "Outil de prévision des ventes basé sur le machine learning",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop",
-  },
-  {
-    title: "Génération de Contenu",
-    year: "2025",
-    description: "Plateforme de création de contenu marketing assistée par IA",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop",
-  },
 ];
 
 const Projects = () => {
