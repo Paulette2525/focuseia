@@ -21,19 +21,12 @@ const Hero = () => {
           en intégrant des solutions d'intelligence artificielle sur mesure.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="flex items-center justify-center">
           <Button
             size="lg"
             className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 py-6 text-base font-medium"
           >
-            <a href="#services">Nos services</a>
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-border text-foreground hover:bg-secondary rounded-full px-8 py-6 text-base font-medium"
-          >
-            <a href="#contact">Nous contacter</a>
+            <a href="#contact">Prendre RDV</a>
           </Button>
         </div>
       </div>
