@@ -609,8 +609,201 @@
 
 .group:hover .quantum-distortion {
   animation-duration: 4s;
-  initial-value: 0deg;
-  inherits: false;
+}
+
+/* ========== Holographic Matrix Effects ========== */
+
+/* Matrix Grid Background */
+.holo-matrix-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(hsl(var(--primary) / 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--primary) / 0.03) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, hsl(280 70% 60% / 0.05) 0%, transparent 50%);
+  background-size: 50px 50px, 50px 50px, 100% 100%;
+  animation: matrix-scroll 20s linear infinite;
+}
+
+@keyframes matrix-scroll {
+  0% { background-position: 0 0, 0 0, 0 0; }
+  100% { background-position: 50px 50px, 50px 50px, 0 0; }
+}
+
+/* 3D Perspective Grid */
+.holo-perspective {
+  background: 
+    linear-gradient(180deg, transparent 0%, hsl(var(--background)) 100%),
+    repeating-linear-gradient(
+      90deg,
+      hsl(var(--primary) / 0.1) 0px,
+      transparent 1px,
+      transparent 100px
+    );
+  transform: perspective(500px) rotateX(60deg);
+  transform-origin: center top;
+  opacity: 0.3;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 60%);
+}
+
+/* Laser Scan Effect */
+.laser-scan {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--primary) / 0.3) 20%,
+    hsl(var(--primary)) 50%,
+    hsl(var(--primary) / 0.3) 80%,
+    transparent 100%
+  );
+  box-shadow: 
+    0 0 20px hsl(var(--primary) / 0.5),
+    0 0 40px hsl(var(--primary) / 0.3),
+    0 0 60px hsl(var(--primary) / 0.2);
+  animation: laser-scan-move 4s ease-in-out infinite;
+}
+
+@keyframes laser-scan-move {
+  0%, 100% { top: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  50% { top: 100%; opacity: 1; }
+  60% { opacity: 0; }
+}
+
+/* Data Fall Animation */
+@keyframes data-fall {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+/* Holographic Card */
+.holo-card {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--card) / 0.8) 0%,
+    hsl(var(--card) / 0.4) 100%
+  );
+  backdrop-filter: blur(20px);
+  border-radius: 0.75rem;
+  border: 1px solid hsl(var(--primary) / 0.2);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  animation: card-float 6s ease-in-out infinite;
+}
+
+.holo-card:nth-child(2) {
+  animation-delay: -3s;
+}
+
+@keyframes card-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.holo-card:hover {
+  border-color: hsl(var(--primary) / 0.5);
+  box-shadow: 
+    0 0 30px hsl(var(--primary) / 0.2),
+    0 20px 40px hsl(0 0% 0% / 0.3),
+    inset 0 0 30px hsl(var(--primary) / 0.05);
+  transform: translateY(-4px) scale(1.02);
+}
+
+/* Holo Frame */
+.holo-frame {
+  border: 1px solid transparent;
+  background: linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box,
+              linear-gradient(
+                135deg,
+                hsl(var(--primary) / 0.5),
+                hsl(280 70% 60% / 0.3),
+                hsl(var(--glow-teal) / 0.4),
+                hsl(var(--primary) / 0.5)
+              ) border-box;
+}
+
+.holo-frame::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--primary) / 0.1),
+    transparent
+  );
+  animation: frame-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes frame-shimmer {
+  0% { left: -100%; }
+  50%, 100% { left: 100%; }
+}
+
+/* Holo Badge */
+.holo-badge {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(280 70% 60% / 0.15));
+  border: 1px solid hsl(var(--primary) / 0.4);
+  border-radius: 0.5rem;
+  backdrop-filter: blur(8px);
+}
+
+/* Stat Bar */
+.stat-bar {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary)),
+    hsl(280 70% 60%),
+    hsl(var(--glow-teal))
+  );
+  background-size: 200% 100%;
+  animation: stat-fill 1.5s ease-out forwards, stat-shimmer 2s ease-in-out infinite;
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+@keyframes stat-fill {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+@keyframes stat-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Metric Cell */
+.metric-cell {
+  background: hsl(var(--muted) / 0.2);
+  border: 1px solid hsl(var(--border) / 0.3);
+  transition: all 0.3s ease;
+}
+
+.metric-cell:hover {
+  background: hsl(var(--primary) / 0.1);
+  border-color: hsl(var(--primary) / 0.4);
+  box-shadow: 0 0 20px hsl(var(--primary) / 0.2);
+}
+
+/* Binary Stream */
+.binary-stream {
+  display: inline-block;
+  animation: binary-scroll 10s linear infinite;
+}
+
+@keyframes binary-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 /* ========== Neural AI Core Effects ========== */
