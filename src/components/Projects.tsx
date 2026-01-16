@@ -27,12 +27,30 @@ const projects = [
 
 const Projects = () => {
   return (
-    <section id="projets" className="py-24 relative">
-      <div className="container mx-auto px-6">
+    <section id="projets" className="py-24 relative overflow-hidden">
+      {/* Cosmic Background */}
+      <div className="cosmic-bg" />
+      
+      {/* Floating Particles */}
+      <div className="absolute inset-0 pointer-events-none">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 rounded-full bg-primary/60"
+            style={{
+              left: `${15 + i * 15}%`,
+              top: `${20 + (i % 3) * 25}%`,
+              animation: `pulse-holo 3s ease-in-out ${i * 0.5}s infinite`,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="container mx-auto px-6 relative z-10">
         {/* Section Title */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Nos Projets
+            <span className="text-gradient">Nos Projets</span>
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
             Découvrez quelques-unes de nos réalisations récentes
@@ -44,32 +62,41 @@ const Projects = () => {
           {projects.map((project, index) => (
             <div
               key={project.title}
-              className="group relative rounded-2xl overflow-hidden card-glass hover:border-primary/50 transition-all duration-300"
-              style={{ animationDelay: `${index * 100}ms` }}
+              className="group card-portal rounded-2xl bg-card/30 backdrop-blur-sm"
+              style={{ 
+                animationDelay: `${index * 100}ms`,
+                transitionDelay: `${index * 50}ms`
+              }}
             >
               {/* Image */}
-              <div className="aspect-video overflow-hidden">
+              <div className="aspect-video overflow-hidden rounded-t-2xl relative">
                 <img
                   src={project.image}
                   alt={project.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="w-full h-full object-cover portal-image"
                 />
+                
+                {/* Portal Glow on Image */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[hsl(280_70%_60%/0.1)] via-transparent to-[hsl(175_70%_50%/0.1)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
 
               {/* Content Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent opacity-80" />
+              <div className="absolute inset-0 portal-overlay rounded-2xl" />
 
               {/* Content */}
-              <div className="absolute bottom-0 left-0 right-0 p-6">
-                <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium mb-3">
-                  {project.year}
+              <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
+                <span className="portal-badge inline-block px-4 py-1.5 rounded-full text-primary text-xs font-medium mb-3 overflow-hidden">
+                  <span className="relative z-10">{project.year}</span>
                 </span>
-                <h3 className="text-foreground font-semibold text-xl mb-2">
+                <h3 className="text-foreground font-semibold text-xl mb-2 group-hover:text-gradient transition-all duration-300">
                   {project.title}
                 </h3>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-muted-foreground text-sm group-hover:text-foreground/80 transition-colors duration-300">
                   {project.description}
                 </p>
+                
+                {/* Bottom Accent Line */}
+                <div className="mt-4 h-[2px] w-0 group-hover:w-full bg-gradient-to-r from-[hsl(280_70%_60%)] via-primary to-[hsl(175_70%_50%)] transition-all duration-700 rounded-full" />
               </div>
             </div>
           ))}

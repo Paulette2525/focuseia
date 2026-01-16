@@ -267,3 +267,152 @@
   initial-value: 0deg;
   inherits: false;
 }
+
+/* Portal Dimensional Effects */
+.card-portal {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.card-portal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--portal-angle, 0deg),
+    hsl(var(--primary)),
+    hsl(280 70% 60%),
+    hsl(var(--glow-teal)),
+    hsl(330 80% 60%),
+    hsl(var(--primary))
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.5;
+  animation: portal-rotate 6s linear infinite;
+  transition: opacity 0.3s ease;
+}
+
+.card-portal:hover::before {
+  opacity: 1;
+  animation: portal-rotate 2s linear infinite;
+}
+
+.card-portal::after {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    hsl(280 70% 60% / 0.15) 0%,
+    hsl(var(--glow-teal) / 0.1) 30%,
+    transparent 60%
+  );
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.5s ease;
+  pointer-events: none;
+}
+
+.card-portal:hover::after {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.card-portal:hover {
+  transform: scale(1.02) translateY(-4px);
+  box-shadow: 
+    0 0 40px hsl(280 70% 60% / 0.3),
+    0 0 80px hsl(var(--glow-teal) / 0.2),
+    0 25px 50px hsl(0 0% 0% / 0.5);
+}
+
+/* Portal Image Distortion */
+.portal-image {
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.group:hover .portal-image {
+  transform: scale(1.1);
+  filter: hue-rotate(15deg) saturate(1.2);
+}
+
+/* Portal Badge */
+.portal-badge {
+  position: relative;
+  background: linear-gradient(135deg, hsl(280 70% 60% / 0.3), hsl(var(--glow-teal) / 0.3));
+  border: 1px solid hsl(280 70% 60% / 0.5);
+  backdrop-filter: blur(8px);
+  animation: badge-pulse 3s ease-in-out infinite;
+}
+
+.portal-badge::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.5), transparent);
+  animation: badge-shimmer 2s ease-in-out infinite;
+}
+
+/* Portal Overlay */
+.portal-overlay {
+  background: linear-gradient(
+    to top,
+    hsl(var(--background)) 0%,
+    hsl(var(--background) / 0.9) 30%,
+    hsl(280 70% 10% / 0.4) 60%,
+    transparent 100%
+  );
+  transition: all 0.5s ease;
+}
+
+.group:hover .portal-overlay {
+  background: linear-gradient(
+    to top,
+    hsl(var(--background)) 0%,
+    hsl(var(--background) / 0.8) 25%,
+    hsl(280 70% 10% / 0.3) 50%,
+    transparent 100%
+  );
+}
+
+/* Cosmic Background */
+.cosmic-bg {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at 20% 20%, hsl(280 70% 60% / 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, hsl(var(--glow-teal) / 0.1) 0%, transparent 50%);
+  animation: cosmic-drift 10s ease-in-out infinite alternate;
+}
+
+@keyframes portal-rotate {
+  0% { --portal-angle: 0deg; }
+  100% { --portal-angle: 360deg; }
+}
+
+@keyframes badge-pulse {
+  0%, 100% { box-shadow: 0 0 10px hsl(280 70% 60% / 0.3); }
+  50% { box-shadow: 0 0 20px hsl(280 70% 60% / 0.6); }
+}
+
+@keyframes badge-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes cosmic-drift {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(20px, 10px) rotate(5deg); }
+}
+
+@property --portal-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
