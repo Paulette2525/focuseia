@@ -537,7 +537,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-[95vw] max-h-[85vh] sm:max-h-[90vh] overflow-hidden bg-background/95 backdrop-blur-xl border border-primary/20 shadow-[0_0_50px_rgba(56,189,248,0.15)] p-0">
+      <DialogContent className="max-w-2xl w-[95vw] h-[90vh] sm:h-[85vh] flex flex-col bg-background/95 backdrop-blur-xl border border-primary/20 shadow-[0_0_50px_rgba(56,189,248,0.15)] p-0 overflow-hidden">
         {/* Animated Background Effects */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Orbiting particles */}
@@ -558,25 +558,25 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
           <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl" />
         </div>
 
-        <div className="relative z-10 flex flex-col h-full">
-          {/* Header */}
-          <DialogHeader className="p-6 pb-0">
-            <div className="flex items-center justify-center gap-3 mb-4">
+        <div className="relative z-10 flex flex-col h-full min-h-0">
+          {/* Header - Fixed */}
+          <DialogHeader className="flex-shrink-0 p-4 sm:p-6 pb-2">
+            <div className="flex items-center justify-center gap-3">
               <div className="relative">
-                <Rocket className="w-8 h-8 text-primary animate-pulse" />
-                <div className="absolute inset-0 w-8 h-8 bg-primary/30 rounded-full blur-lg animate-ping" style={{ animationDuration: '2s' }} />
+                <Rocket className="w-6 h-6 sm:w-8 sm:h-8 text-primary animate-pulse" />
+                <div className="absolute inset-0 w-6 h-6 sm:w-8 sm:h-8 bg-primary/30 rounded-full blur-lg animate-ping" style={{ animationDuration: '2s' }} />
               </div>
-              <DialogTitle className="text-2xl md:text-3xl font-bold text-center bg-gradient-to-r from-foreground via-primary to-cyan-400 bg-clip-text text-transparent">
+              <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center bg-gradient-to-r from-foreground via-primary to-cyan-400 bg-clip-text text-transparent">
                 Mission : Transformation
               </DialogTitle>
             </div>
           </DialogHeader>
 
-          {/* Circular Progress Gauge */}
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-center gap-6">
+          {/* Circular Progress Gauge - Fixed */}
+          <div className="flex-shrink-0 px-4 sm:px-6 py-2 sm:py-3">
+            <div className="flex items-center justify-center gap-4 sm:gap-6">
               {/* Main Circular Gauge */}
-              <div className="relative w-20 h-20 md:w-24 md:h-24">
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex-shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                   {/* Background circle */}
                   <circle
@@ -610,27 +610,27 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                 </svg>
                 {/* Center content */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-xl md:text-2xl font-bold text-primary">{currentStep}</span>
+                  <span className="text-lg sm:text-xl md:text-2xl font-bold text-primary">{currentStep}</span>
                   <span className="text-[10px] md:text-xs text-muted-foreground">/ 6</span>
                 </div>
               </div>
 
               {/* Step Info */}
-              <div className="flex-1 max-w-xs">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
                   {(() => {
                     const Icon = steps[currentStep - 1].icon;
-                    return <Icon className="w-5 h-5 text-primary" />;
+                    return <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />;
                   })()}
-                  <h3 className="text-lg font-semibold text-foreground">
+                  <h3 className="text-sm sm:text-lg font-semibold text-foreground truncate">
                     {steps[currentStep - 1].title}
                   </h3>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {steps[currentStep - 1].subtitle}
                 </p>
                 {/* Mini step indicators */}
-                <div className="flex gap-1.5 mt-3">
+                <div className="flex gap-1 sm:gap-1.5 mt-2">
                   {steps.map((step) => (
                     <div
                       key={step.id}
@@ -648,41 +648,39 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
             </div>
           </div>
 
-          {/* Form Content with scroll */}
-          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-6 py-4 custom-scrollbar touch-pan-y">
+          {/* Form Content with scroll - This is the scrollable area */}
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-6 py-3 custom-scrollbar">
             {renderStep()}
           </div>
 
-          {/* Navigation Buttons */}
-          <div className="p-6 pt-4 border-t border-primary/10 bg-background/50 backdrop-blur-sm">
-            <div className="flex justify-between gap-4">
+          {/* Navigation Buttons - Fixed at bottom */}
+          <div className="flex-shrink-0 p-4 sm:p-6 pt-3 sm:pt-4 border-t border-primary/10 bg-background/80 backdrop-blur-sm">
+            <div className="flex justify-between gap-3 sm:gap-4">
               <Button
                 variant="outline"
                 onClick={prevStep}
                 disabled={currentStep === 1}
-                className="flex-1 border-primary/20 text-foreground hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 disabled:opacity-30"
+                className="flex-1 h-10 sm:h-12 border-primary/20 text-foreground hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 disabled:opacity-30"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Précédent</span>
+                <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="text-sm sm:text-base">Précédent</span>
               </Button>
 
               {currentStep < 6 ? (
                 <Button
                   onClick={nextStep}
-                  className="flex-1 bg-gradient-to-r from-primary to-cyan-500 text-primary-foreground hover:from-primary/90 hover:to-cyan-500/90 shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_30px_rgba(56,189,248,0.5)] transition-all duration-300"
+                  className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary to-cyan-500 text-primary-foreground hover:from-primary/90 hover:to-cyan-500/90 shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_30px_rgba(56,189,248,0.5)] transition-all duration-300"
                 >
-                  <span className="hidden sm:inline">Suivant</span>
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  <span className="text-sm sm:text-base">Suivant</span>
+                  <ArrowRight className="w-4 h-4 ml-1 sm:ml-2" />
                 </Button>
               ) : (
                 <Button
                   onClick={handleSubmit}
-                  className="flex-1 bg-gradient-to-r from-primary via-cyan-500 to-primary text-primary-foreground shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:shadow-[0_0_40px_rgba(56,189,248,0.6)] transition-all duration-300 animate-pulse"
-                  style={{ animationDuration: '2s' }}
+                  className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary via-cyan-500 to-primary text-primary-foreground shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:shadow-[0_0_40px_rgba(56,189,248,0.6)] transition-all duration-300"
                 >
-                  <Rocket className="w-4 h-4 mr-2" />
-                  Lancer la mission
-                  <Send className="w-4 h-4 ml-2" />
+                  <Rocket className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="text-sm sm:text-base">Envoyer</span>
                 </Button>
               )}
             </div>
