@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import BookingFormDialog from "./BookingFormDialog";
 
 const Contact = () => {
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+
   return (
     <section id="contact" className="py-24 relative">
       {/* Background glow */}
@@ -24,6 +28,7 @@ const Contact = () => {
             <Button
               size="lg"
               className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 py-6 text-base font-medium group"
+              onClick={() => setIsBookingOpen(true)}
             >
               Prendre rendez-vous
               <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -38,6 +43,8 @@ const Contact = () => {
           </div>
         </div>
       </div>
+
+      <BookingFormDialog open={isBookingOpen} onOpenChange={setIsBookingOpen} />
     </section>
   );
 };
