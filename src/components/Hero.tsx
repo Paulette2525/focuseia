@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { useBooking } from "@/contexts/BookingContext";
 
 // Generate random binary strings
 const generateBinary = () => {
@@ -26,6 +27,7 @@ const binaryStreams = Array.from({ length: 8 }, (_, i) => ({
 
 const Hero = () => {
   const [binaryValues, setBinaryValues] = useState<string[]>([]);
+  const { openBooking } = useBooking();
 
   useEffect(() => {
     // Initialize binary values
@@ -146,8 +148,9 @@ const Hero = () => {
           <Button
             size="lg"
             className="cta-neural bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 py-6 text-base font-medium"
+            onClick={openBooking}
           >
-            <a href="#contact">Prendre RDV</a>
+            Prendre RDV
           </Button>
         </div>
       </div>

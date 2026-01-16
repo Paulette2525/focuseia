@@ -537,7 +537,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden bg-background/95 backdrop-blur-xl border border-primary/20 shadow-[0_0_50px_rgba(56,189,248,0.15)] p-0">
+      <DialogContent className="max-w-2xl w-[95vw] max-h-[85vh] sm:max-h-[90vh] overflow-hidden bg-background/95 backdrop-blur-xl border border-primary/20 shadow-[0_0_50px_rgba(56,189,248,0.15)] p-0">
         {/* Animated Background Effects */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Orbiting particles */}
@@ -649,7 +649,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
           </div>
 
           {/* Form Content with scroll */}
-          <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-6 py-4 custom-scrollbar touch-pan-y">
             {renderStep()}
           </div>
 

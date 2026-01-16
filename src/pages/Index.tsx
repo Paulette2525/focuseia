@@ -6,8 +6,12 @@ import Projects from "@/components/Projects";
 import Testimonials from "@/components/Testimonials";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import BookingFormDialog from "@/components/BookingFormDialog";
+import { BookingProvider, useBooking } from "@/contexts/BookingContext";
 
-const Index = () => {
+const IndexContent = () => {
+  const { isBookingOpen, setBookingOpen } = useBooking();
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -20,7 +24,16 @@ const Index = () => {
         <Contact />
       </main>
       <Footer />
+      <BookingFormDialog open={isBookingOpen} onOpenChange={setBookingOpen} />
     </div>
+  );
+};
+
+const Index = () => {
+  return (
+    <BookingProvider>
+      <IndexContent />
+    </BookingProvider>
   );
 };
 

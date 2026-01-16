@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { useBooking } from "@/contexts/BookingContext";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { openBooking } = useBooking();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -54,8 +56,9 @@ const Header = () => {
           <Button
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-6"
+            onClick={openBooking}
           >
-            <a href="#contact">Prendre RDV</a>
+            Prendre RDV
           </Button>
         </nav>
       </div>
