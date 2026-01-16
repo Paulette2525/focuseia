@@ -23,23 +23,14 @@ const Contact = () => {
             l'IA peut révolutionner votre business.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button
-              size="lg"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 py-6 text-base font-medium group"
-              onClick={openBooking}
-            >
-              Prendre rendez-vous
-              <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-border text-foreground hover:bg-secondary rounded-full px-8 py-6 text-base font-medium"
-            >
-              contact@focuseia.com
-            </Button>
-          </div>
+          <Button
+            size="lg"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 py-6 text-base font-medium group"
+            onClick={openBooking}
+          >
+            Prendre rendez-vous
+            <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </Button>
         </div>
       </div>
     </section>
