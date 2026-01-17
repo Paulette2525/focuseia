@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Users, Mail, Phone, Building2, RefreshCw, Target, Settings, Brain, UserCheck, CalendarCheck, Trash2, Loader2 } from "lucide-react";
+import { Eye, Users, Mail, Phone, Building2, RefreshCw, Target, Settings, Brain, UserCheck, CalendarCheck, Trash2, Loader2, LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 interface Prospect {
@@ -43,11 +44,17 @@ interface Prospect {
 }
 
 const Admin = () => {
+  const { signOut, user } = useAuth();
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Déconnexion réussie");
+  };
 
   const fetchProspects = async () => {
     setLoading(true);
@@ -134,10 +141,19 @@ const Admin = () => {
               </p>
             </div>
           </div>
-          <Button onClick={fetchProspects} variant="outline" className="gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Actualiser
-          </Button>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground hidden md:inline">
+              {user?.email}
+            </span>
+            <Button onClick={fetchProspects} variant="outline" className="gap-2">
+              <RefreshCw className="h-4 w-4" />
+              <span className="hidden sm:inline">Actualiser</span>
+            </Button>
+            <Button onClick={handleSignOut} variant="ghost" className="gap-2 text-muted-foreground hover:text-foreground">
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Déconnexion</span>
+            </Button>
+          </div>
         </div>
 
         {loading ? (
