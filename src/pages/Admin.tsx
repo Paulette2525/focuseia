@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Users, Mail, Phone, Building2, RefreshCw, Target, Settings, Brain, UserCheck, CalendarCheck, Trash2, Loader2, LogOut } from "lucide-react";
 import { toast } from "sonner";
+import ProspectFilters, { type FilterType } from "@/components/ProspectFilters";
+import QualificationBadge from "@/components/QualificationBadge";
+import { calculateQualificationScore } from "@/lib/prospectScoring";
 
 interface Prospect {
   id: string;
@@ -50,6 +53,27 @@ const Admin = () => {
   const [selectedProspect, setSelectedProspect] = useState<Prospect | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+
+  // Calculate filtered prospects and counts
+  const { filteredProspects, filterCounts } = useMemo(() => {
+    const counts = { all: 0, qualified: 0, evaluate: 0, unqualified: 0 };
+    
+    prospects.forEach((prospect) => {
+      const result = calculateQualificationScore(prospect);
+      counts.all++;
+      counts[result.category]++;
+    });
+
+    const filtered = activeFilter === 'all' 
+      ? prospects 
+      : prospects.filter((prospect) => {
+          const result = calculateQualificationScore(prospect);
+          return result.category === activeFilter;
+        });
+
+    return { filteredProspects: filtered, filterCounts: counts };
+  }, [prospects, activeFilter]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -171,86 +195,107 @@ const Admin = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
-            {prospects.map((prospect) => (
-              <Card key={prospect.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4 md:p-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-start gap-4 flex-1">
-                      <Badge variant="secondary" className="text-lg font-bold px-3 py-1 min-w-[50px] text-center">
-                        {prospect.numero}
-                      </Badge>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-foreground truncate">
-                          {prospect.full_name}
-                        </h3>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Mail className="h-3.5 w-3.5" />
-                            {prospect.email}
-                          </span>
-                          <span className="hidden sm:inline">•</span>
-                          <span className="flex items-center gap-1">
-                            <Phone className="h-3.5 w-3.5" />
-                            {prospect.phone}
-                          </span>
+          <>
+            <ProspectFilters 
+              activeFilter={activeFilter}
+              onFilterChange={setActiveFilter}
+              counts={filterCounts}
+            />
+            <div className="space-y-4">
+              {filteredProspects.length === 0 ? (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <Users className="h-12 w-12 text-muted-foreground mb-3" />
+                    <p className="text-muted-foreground text-center">
+                      Aucun prospect dans cette catégorie
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                filteredProspects.map((prospect) => (
+                  <Card key={prospect.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4 md:p-6">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-start gap-4 flex-1">
+                          <Badge variant="secondary" className="text-lg font-bold px-3 py-1 min-w-[50px] text-center">
+                            {prospect.numero}
+                          </Badge>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="text-lg font-semibold text-foreground truncate">
+                                {prospect.full_name}
+                              </h3>
+                              <QualificationBadge prospect={prospect} />
+                            </div>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1 text-sm text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <Mail className="h-3.5 w-3.5" />
+                                {prospect.email}
+                              </span>
+                              <span className="hidden sm:inline">•</span>
+                              <span className="flex items-center gap-1">
+                                <Phone className="h-3.5 w-3.5" />
+                                {prospect.phone}
+                              </span>
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-2 line-clamp-1">
+                              {getSummary(prospect)}
+                            </p>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground mt-2 line-clamp-1">
-                          {getSummary(prospect)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <span className="text-xs text-muted-foreground whitespace-nowrap hidden sm:inline">
-                        {formatDate(prospect.created_at)}
-                      </span>
-                      <Button
-                        onClick={() => openDetail(prospect)}
-                        variant="default"
-                        size="sm"
-                        className="gap-2"
-                      >
-                        <Eye className="h-4 w-4" />
-                        <span className="hidden sm:inline">Voir plus</span>
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap hidden sm:inline">
+                            {formatDate(prospect.created_at)}
+                          </span>
                           <Button
-                            variant="destructive"
+                            onClick={() => openDetail(prospect)}
+                            variant="default"
                             size="sm"
-                            disabled={deletingId === prospect.id}
+                            className="gap-2"
                           >
-                            {deletingId === prospect.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-4 w-4" />
-                            )}
+                            <Eye className="h-4 w-4" />
+                            <span className="hidden sm:inline">Voir plus</span>
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Supprimer ce prospect ?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Êtes-vous sûr de vouloir supprimer <strong>{prospect.full_name}</strong> ? Cette action est irréversible.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Annuler</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(prospect)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Supprimer
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                disabled={deletingId === prospect.id}
+                              >
+                                {deletingId === prospect.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Supprimer ce prospect ?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Êtes-vous sûr de vouloir supprimer <strong>{prospect.full_name}</strong> ? Cette action est irréversible.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(prospect)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Supprimer
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </>
         )}
 
         {/* Modal Détails */}
