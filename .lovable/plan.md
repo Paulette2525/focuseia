@@ -1,88 +1,222 @@
 
-# Plan: Systeme de filtrage des prospects non qualifies
+# Plan d'Implementation: Emails + Calendrier Cal.com
 
-## Analyse des criteres de qualification
+## Resume
 
-En analysant votre formulaire de prospects, j'ai identifie plusieurs criteres cles qui peuvent determiner si un prospect est qualifie ou non:
-
-| Critere | Valeurs qualifiantes | Valeurs non qualifiantes |
-|---------|---------------------|--------------------------|
-| Decisionnaire | "Oui, entierement" | "Non, je dois consulter" |
-| Priorite projet | "Elevee" ou "Critique" | "Faible" |
-| Pret au changement | "Oui, absolument" | "Non, optimisations mineures" |
-
-## Options proposees
-
-### Option 1: Filtrage simple par statut
-Ajouter un systeme de filtre avec des boutons ou un menu deroulant permettant de basculer entre:
-- **Tous les prospects** - Vue complete
-- **Qualifies** - Prospects repondant aux criteres positifs
-- **Non qualifies** - Prospects ne repondant pas aux criteres
-- **A evaluer** - Prospects avec des reponses intermediaires
-
-### Option 2: Filtrage multi-criteres avance
-Interface avec plusieurs filtres combinables:
-- Filtre par decisionnaire (Oui / Partiel / Non)
-- Filtre par priorite projet (Faible / Moyenne / Elevee / Critique)
-- Filtre par niveau d'engagement (Pret / Peut-etre / Non)
-- Filtre par date de soumission
-
-### Option 3: Systeme de scoring automatique
-Calculer un "score de qualification" base sur les reponses:
-- +3 points si decisionnaire = "yes"
-- +2 points si priorite = "high" ou "critical"
-- +2 points si pret au changement = "yes"
-- +1 point si investissements precedents = "yes"
-
-Affichage d'un badge de score (0-8) sur chaque carte prospect avec code couleur:
-- Vert (6-8): Tres qualifie
-- Orange (3-5): A evaluer
-- Rouge (0-2): Non qualifie
-
-### Option 4: Systeme de statut manuel avec colonnes
-Permettre de marquer manuellement les prospects comme:
-- "Nouveau" (par defaut)
-- "Qualifie"
-- "Non qualifie"
-- "Contact effectue"
-- "Converti"
-
-Cela necessite d'ajouter une colonne `status` dans la base de donnees.
-
-## Recommandation
-
-Je recommande de combiner **l'Option 3 (scoring automatique)** avec **l'Option 1 (filtrage simple)**:
-- Le scoring automatique donne une premiere evaluation objective
-- Le filtrage simple permet de naviguer rapidement entre les categories
-- Interface intuitive sans surcharge d'options
+Ce plan couvre l'implementation de deux fonctionnalites majeures:
+1. **Envoi d'emails via Resend** - Modal de composition d'email avec templates pre-definis
+2. **Integration Cal.com** - Lien de reservation integre dans les emails et l'interface
 
 ---
 
-## Details techniques (pour reference)
+## Phase 1: Configuration des Secrets
 
-### Modifications de l'interface (Admin.tsx)
-1. Ajouter une barre de filtres au-dessus de la liste des prospects
-2. Creer une fonction `calculateQualificationScore()` pour le scoring
-3. Ajouter des badges visuels de qualification sur chaque carte
-4. Implementer le filtrage cote client (pas de modification base de donnees)
+### Secrets a ajouter
+| Secret | Valeur | Usage |
+|--------|--------|-------|
+| `RESEND_API_KEY` | (fourni par l'utilisateur) | Envoi d'emails |
+| `CAL_API_KEY` | `cal_live_098444a7070f735f84d3696cbbcb21e1` | Integration Cal.com |
 
-### Composants a creer/modifier
-- Nouveau composant `ProspectFilters` pour la barre de filtres
-- Modification du composant de carte prospect pour afficher le score
-- Fonction utilitaire pour calculer le score de qualification
+---
 
-### Logique de scoring proposee
+## Phase 2: Systeme d'Envoi d'Emails
+
+### 2.1 Edge Function `send-email`
+
+Creation d'une edge function pour envoyer des emails via l'API Resend.
+
+**Fichier:** `supabase/functions/send-email/index.ts`
+
+**Fonctionnalites:**
+- Reception des parametres (destinataire, sujet, contenu HTML)
+- Validation des donnees
+- Envoi via Resend API
+- Gestion des erreurs et CORS
 
 ```text
-Score de qualification (0-10 points):
-- is_decision_maker = "yes": +3 pts / "partial": +1 pt / "no": 0 pt
-- project_priority = "critical": +3 pts / "high": +2 pts / "medium": +1 pt / "low": 0 pt
-- ready_to_change = "yes": +2 pts / "maybe": +1 pt / "no": 0 pt
-- current_ai_tools != "no": +1 pt
-- previous_investments = "yes": +1 pt
+Request Body:
+{
+  "to": "prospect@email.com",
+  "subject": "Votre consultation gratuite FocuseIA",
+  "html": "<p>Contenu de l'email...</p>",
+  "prospect_name": "Jean Dupont"
+}
 ```
 
-Categorisation:
-- 7-10: Tres qualifie (vert)
-- 4-6: A evaluer (orange)
-- 0-3: Non qualifie (rouge)
+### 2.2 Table `email_logs` (Historique)
+
+**Schema:**
+```text
+email_logs
+- id: UUID (PK)
+- prospect_id: UUID (FK -> prospects.id)
+- subject: TEXT
+- template_type: TEXT (welcome, followup, booking, custom)
+- sent_at: TIMESTAMP
+- status: TEXT (sent, failed)
+- sent_by: UUID (FK -> auth.users.id)
+```
+
+**RLS:** Lecture/Ecriture pour utilisateurs authentifies uniquement.
+
+### 2.3 Composant `EmailComposerModal`
+
+**Fichier:** `src/components/EmailComposerModal.tsx`
+
+**Fonctionnalites:**
+- Modal avec formulaire de composition
+- Templates pre-definis selectionnables:
+  - **Bienvenue**: Premier contact apres soumission
+  - **Relance**: Rappel amical avec proposition de RDV
+  - **Invitation Cal.com**: Lien direct vers le calendrier
+- Personnalisation automatique avec les donnees du prospect (nom, entreprise)
+- Bouton d'envoi avec feedback (succes/erreur)
+
+```text
+Interface utilisateur:
++------------------------------------------+
+|  Envoyer un email a [Nom Prospect]       |
++------------------------------------------+
+|  Template: [Dropdown - Bienvenue/Relance]|
+|                                          |
+|  Sujet: [________________________]       |
+|                                          |
+|  Contenu:                                |
+|  +------------------------------------+  |
+|  | Bonjour {prenom},                  |  |
+|  |                                    |  |
+|  | Suite a votre demande...           |  |
+|  +------------------------------------+  |
+|                                          |
+|  [ Annuler ]            [ Envoyer ]      |
++------------------------------------------+
+```
+
+### 2.4 Integration dans la page Admin
+
+**Modifications de `src/pages/Admin.tsx`:**
+- Ajout d'un bouton "Envoyer email" sur chaque carte prospect
+- Ajout d'un bouton "Envoyer email" dans la modal de details
+- Gestion de l'etat pour ouvrir/fermer le modal email
+
+---
+
+## Phase 3: Integration Cal.com
+
+### 3.1 Configuration Cal.com
+
+**Prerequis utilisateur:**
+1. Creer un compte sur cal.com
+2. Connecter Google Calendar dans les parametres Cal.com
+3. Creer un type d'evenement "Consultation Gratuite FocuseIA" (30min)
+4. Recuperer le lien de reservation (ex: `https://cal.com/votreequipe/consultation`)
+
+### 3.2 Constante de configuration
+
+**Fichier:** `src/lib/calendarConfig.ts`
+
+```text
+export const CAL_BOOKING_URL = "https://cal.com/VOTRE_USERNAME/consultation";
+```
+
+### 3.3 Integration dans les Templates d'Emails
+
+Chaque template inclura automatiquement un lien vers Cal.com:
+
+```text
+Template "Invitation RDV":
+---
+Bonjour {prenom},
+
+Reservez votre consultation gratuite de 30 minutes 
+avec notre equipe FocuseIA:
+
+[Bouton: Reserver mon creneau] -> lien Cal.com
+
+A tres bientot!
+```
+
+### 3.4 Bouton d'action rapide (Optionnel)
+
+Ajout d'un bouton "Inviter a reserver" sur chaque carte prospect qui:
+1. Ouvre le modal email
+2. Pre-selectionne le template "Invitation Cal.com"
+
+---
+
+## Fichiers a creer/modifier
+
+### Nouveaux fichiers
+| Fichier | Description |
+|---------|-------------|
+| `supabase/functions/send-email/index.ts` | Edge function Resend |
+| `src/components/EmailComposerModal.tsx` | Modal de composition |
+| `src/lib/emailTemplates.ts` | Templates d'emails |
+| `src/lib/calendarConfig.ts` | Configuration Cal.com |
+
+### Fichiers modifies
+| Fichier | Modifications |
+|---------|---------------|
+| `src/pages/Admin.tsx` | Ajout boutons email, integration modal |
+| `supabase/config.toml` | Configuration edge function |
+
+### Migration base de donnees
+- Creation table `email_logs` avec RLS
+
+---
+
+## Details techniques
+
+### Edge Function send-email
+
+```text
+Endpoint: POST /functions/v1/send-email
+Headers: Authorization: Bearer {user_token}
+
+Validation:
+- to: email valide
+- subject: non vide
+- html: non vide
+
+Reponse succes: { success: true, id: "email_id" }
+Reponse erreur: { success: false, error: "message" }
+```
+
+### Templates d'emails disponibles
+
+| Template | Sujet | Contenu |
+|----------|-------|---------|
+| welcome | Bienvenue chez FocuseIA | Remerciement + presentation |
+| followup | Votre projet IA nous interesse | Rappel + proposition RDV |
+| booking | Reservez votre consultation | Lien Cal.com direct |
+| custom | (personnalise) | (personnalise) |
+
+### Variables de personnalisation
+
+```text
+{prospect_name} -> Nom complet
+{company_name} -> Nom entreprise
+{sector} -> Secteur d'activite
+{booking_url} -> Lien Cal.com
+```
+
+---
+
+## Ordre d'implementation
+
+1. **Ajouter les secrets** RESEND_API_KEY et CAL_API_KEY
+2. **Creer la table email_logs** avec migration
+3. **Creer l'edge function send-email**
+4. **Creer le fichier de configuration Cal.com**
+5. **Creer les templates d'emails**
+6. **Creer le composant EmailComposerModal**
+7. **Integrer dans la page Admin**
+8. **Tester l'envoi d'email**
+
+---
+
+## Remarque importante
+
+Pour que Resend fonctionne, vous devez avoir un domaine verifie (ex: `@focuseia.com`). 
+Si vous n'en avez pas encore, vous pouvez utiliser le domaine de test Resend pour commencer: `onboarding@resend.dev` (limite a votre propre adresse email).
+
