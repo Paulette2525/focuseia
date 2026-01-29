@@ -7,11 +7,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Users, Mail, Phone, Building2, RefreshCw, Target, Settings, Brain, UserCheck, CalendarCheck, Trash2, Loader2, LogOut } from "lucide-react";
+import { Eye, Users, Mail, Phone, Building2, RefreshCw, Target, Settings, Brain, UserCheck, CalendarCheck, Trash2, Loader2, LogOut, Send, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import ProspectFilters, { type FilterType } from "@/components/ProspectFilters";
 import QualificationBadge from "@/components/QualificationBadge";
 import { calculateQualificationScore } from "@/lib/prospectScoring";
+import EmailComposerModal from "@/components/EmailComposerModal";
 
 interface Prospect {
   id: string;
@@ -54,6 +55,15 @@ const Admin = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [emailProspect, setEmailProspect] = useState<Prospect | null>(null);
+  const [emailTemplate, setEmailTemplate] = useState<string>("welcome");
+
+  const openEmailModal = (prospect: Prospect, template: string = "welcome") => {
+    setEmailProspect(prospect);
+    setEmailTemplate(template);
+    setEmailModalOpen(true);
+  };
 
   // Calculate filtered prospects and counts
   const { filteredProspects, filterCounts } = useMemo(() => {
@@ -248,6 +258,16 @@ const Admin = () => {
                             {formatDate(prospect.created_at)}
                           </span>
                           <Button
+                            onClick={() => openEmailModal(prospect, "booking")}
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                            title="Envoyer un email"
+                          >
+                            <Send className="h-4 w-4" />
+                            <span className="hidden lg:inline">Email</span>
+                          </Button>
+                          <Button
                             onClick={() => openDetail(prospect)}
                             variant="default"
                             size="sm"
@@ -440,8 +460,41 @@ const Admin = () => {
                 </div>
               )}
             </ScrollArea>
+            {selectedProspect && (
+              <div className="pt-4 border-t flex gap-3">
+                <Button 
+                  onClick={() => {
+                    setDetailOpen(false);
+                    openEmailModal(selectedProspect, "welcome");
+                  }}
+                  className="gap-2"
+                >
+                  <Send className="h-4 w-4" />
+                  Envoyer un email
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setDetailOpen(false);
+                    openEmailModal(selectedProspect, "booking");
+                  }}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <Calendar className="h-4 w-4" />
+                  Inviter à réserver
+                </Button>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
+
+        {/* Email Composer Modal */}
+        <EmailComposerModal
+          open={emailModalOpen}
+          onOpenChange={setEmailModalOpen}
+          prospect={emailProspect}
+          defaultTemplate={emailTemplate}
+        />
       </div>
     </div>
   );

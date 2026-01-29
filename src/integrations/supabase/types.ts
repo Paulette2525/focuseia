@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      email_logs: {
+        Row: {
+          id: string
+          prospect_id: string
+          sent_at: string
+          sent_by: string | null
+          status: string
+          subject: string
+          template_type: string
+        }
+        Insert: {
+          id?: string
+          prospect_id: string
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+          subject: string
+          template_type: string
+        }
+        Update: {
+          id?: string
+          prospect_id?: string
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+          subject?: string
+          template_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prospects: {
         Row: {
           ai_frustrations: string | null
