@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 const projects = [
   {
     title: "Chatbot E-commerce",
-    year: "2024",
+    year: "2025",
     description: "Assistant IA pour une plateforme de vente en ligne",
     stats: {
       efficiency: 94,
@@ -18,7 +18,7 @@ const projects = [
   },
   {
     title: "Automatisation RH",
-    year: "2024",
+    year: "2025",
     description: "Système de tri et analyse automatique des CV",
     stats: {
       efficiency: 89,
