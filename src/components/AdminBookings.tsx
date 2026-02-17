@@ -2,13 +2,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Calendar, Clock, Mail, Phone, Building2, Loader2, XCircle, RefreshCw } from "lucide-react";
+import { Calendar, Clock, Mail, Phone, Building2, Loader2, XCircle, RefreshCw, Eye, Target } from "lucide-react";
 import { useBookings } from "@/hooks/useBookings";
 import { toast } from "sonner";
 import { format, parseISO, isBefore, startOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
 
-const AdminBookings = () => {
+interface AdminBookingsProps {
+  onViewProspect?: (prospectId: string) => void;
+}
+
+const AdminBookings = ({ onViewProspect }: AdminBookingsProps) => {
   const { bookings, loading, fetchBookings, cancelBooking } = useBookings();
 
   const handleCancel = async (id: string) => {
@@ -79,33 +83,46 @@ const AdminBookings = () => {
                 </div>
               )}
             </div>
-            {!isCancelled && !isPast && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10">
-                    <XCircle className="h-4 w-4" />
-                    Annuler
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Annuler ce rendez-vous ?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Le rendez-vous avec <strong>{booking.prospects?.full_name}</strong> sera annulé.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Non</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => handleCancel(booking.id)}
-                      className="bg-destructive text-destructive-foreground"
-                    >
-                      Annuler le RDV
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
+            <div className="flex items-center gap-2">
+              {onViewProspect && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => onViewProspect(booking.prospect_id)}
+                >
+                  <Eye className="h-4 w-4" />
+                  Voir prospect
+                </Button>
+              )}
+              {!isCancelled && !isPast && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10">
+                      <XCircle className="h-4 w-4" />
+                      Annuler
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Annuler ce rendez-vous ?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Le rendez-vous avec <strong>{booking.prospects?.full_name}</strong> sera annulé.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Non</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleCancel(booking.id)}
+                        className="bg-destructive text-destructive-foreground"
+                      >
+                        Annuler le RDV
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
