@@ -4,11 +4,11 @@ import { cn } from "@/lib/utils";
 
 interface QualificationBadgeProps {
   prospect: {
-    is_decision_maker: string | null;
-    project_priority: string | null;
-    ready_to_change: string | null;
-    current_ai_tools: string | null;
-    previous_investments: string | null;
+    role: string | null;
+    team_size: string | null;
+    main_challenges: string | null;
+    ai_tools_usage: string | null;
+    sector: string | null;
   };
   showLabel?: boolean;
   className?: string;
