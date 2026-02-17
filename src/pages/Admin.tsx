@@ -108,23 +108,16 @@ const Admin = () => {
 
   // Calculate filtered prospects and counts
   const { filteredProspects, filterCounts } = useMemo(() => {
-    const counts = { all: 0, qualified: 0, evaluate: 0, unqualified: 0, with_booking: 0, without_booking: 0 };
+    const counts = { all: 0, qualified: 0, evaluate: 0, unqualified: 0 };
     
     prospects.forEach((prospect) => {
       const result = calculateQualificationScore(prospect);
       counts.all++;
       counts[result.category]++;
-      const hasBooking = (bookingsByProspect[prospect.id] || []).some(b => b.status === 'confirmed');
-      if (hasBooking) counts.with_booking++;
-      else counts.without_booking++;
     });
 
     let filtered = prospects;
-    if (activeFilter === 'with_booking') {
-      filtered = prospects.filter(p => (bookingsByProspect[p.id] || []).some(b => b.status === 'confirmed'));
-    } else if (activeFilter === 'without_booking') {
-      filtered = prospects.filter(p => !(bookingsByProspect[p.id] || []).some(b => b.status === 'confirmed'));
-    } else if (activeFilter !== 'all') {
+    if (activeFilter !== 'all') {
       filtered = prospects.filter((prospect) => {
         const result = calculateQualificationScore(prospect);
         return result.category === activeFilter;
@@ -258,7 +251,7 @@ const Admin = () => {
         </div>
 
         {/* Dashboard Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold text-foreground">{dashboardStats.total}</p>
@@ -275,12 +268,6 @@ const Admin = () => {
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold text-primary">{dashboardStats.upcomingBookings}</p>
               <p className="text-xs text-muted-foreground">RDV à venir</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-destructive">{dashboardStats.withoutBooking}</p>
-              <p className="text-xs text-muted-foreground">Sans RDV</p>
             </CardContent>
           </Card>
         </div>
