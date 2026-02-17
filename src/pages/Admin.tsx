@@ -7,12 +7,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Users, Mail, Phone, Building2, RefreshCw, Target, Settings, Brain, UserCheck, CalendarCheck, Trash2, Loader2, LogOut, Send, Calendar } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Eye, Users, Mail, Phone, Building2, RefreshCw, Target, Settings, Brain, UserCheck, CalendarCheck, Trash2, Loader2, LogOut, Send, Calendar, Clock } from "lucide-react";
 import { toast } from "sonner";
 import ProspectFilters, { type FilterType } from "@/components/ProspectFilters";
 import QualificationBadge from "@/components/QualificationBadge";
 import { calculateQualificationScore } from "@/lib/prospectScoring";
 import EmailComposerModal from "@/components/EmailComposerModal";
+import AdminAvailability from "@/components/AdminAvailability";
+import AdminBookings from "@/components/AdminBookings";
 
 interface Prospect {
   id: string;
@@ -169,9 +172,9 @@ const Admin = () => {
           <div className="flex items-center gap-3">
             <Users className="h-8 w-8 text-primary" />
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Gestion des Prospects</h1>
+              <h1 className="text-3xl font-bold text-foreground">Administration</h1>
               <p className="text-muted-foreground">
-                {prospects.length} prospect{prospects.length !== 1 ? "s" : ""} enregistré{prospects.length !== 1 ? "s" : ""}
+                Gestion des prospects et rendez-vous
               </p>
             </div>
           </div>
@@ -179,10 +182,6 @@ const Admin = () => {
             <span className="text-sm text-muted-foreground hidden md:inline">
               {user?.email}
             </span>
-            <Button onClick={fetchProspects} variant="outline" className="gap-2">
-              <RefreshCw className="h-4 w-4" />
-              <span className="hidden sm:inline">Actualiser</span>
-            </Button>
             <Button onClick={handleSignOut} variant="ghost" className="gap-2 text-muted-foreground hover:text-foreground">
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Déconnexion</span>
@@ -190,133 +189,173 @@ const Admin = () => {
           </div>
         </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        ) : prospects.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-20">
-              <Users className="h-16 w-16 text-muted-foreground mb-4" />
-              <h2 className="text-xl font-semibold text-foreground mb-2">Aucun prospect pour le moment</h2>
-              <p className="text-muted-foreground text-center max-w-md">
-                Les prospects qui remplissent le formulaire de contact apparaîtront ici.
+        <Tabs defaultValue="prospects" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="prospects" className="gap-2">
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Prospects</span>
+            </TabsTrigger>
+            <TabsTrigger value="bookings" className="gap-2">
+              <Calendar className="h-4 w-4" />
+              <span className="hidden sm:inline">Rendez-vous</span>
+            </TabsTrigger>
+            <TabsTrigger value="availability" className="gap-2">
+              <Clock className="h-4 w-4" />
+              <span className="hidden sm:inline">Disponibilités</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Prospects Tab */}
+          <TabsContent value="prospects">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-muted-foreground">
+                {prospects.length} prospect{prospects.length !== 1 ? "s" : ""} enregistré{prospects.length !== 1 ? "s" : ""}
               </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            <ProspectFilters 
-              activeFilter={activeFilter}
-              onFilterChange={setActiveFilter}
-              counts={filterCounts}
-            />
-            <div className="space-y-4">
-              {filteredProspects.length === 0 ? (
-                <Card>
-                  <CardContent className="flex flex-col items-center justify-center py-12">
-                    <Users className="h-12 w-12 text-muted-foreground mb-3" />
-                    <p className="text-muted-foreground text-center">
-                      Aucun prospect dans cette catégorie
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                filteredProspects.map((prospect) => (
-                  <Card key={prospect.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4 md:p-6">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="flex items-start gap-4 flex-1">
-                          <Badge variant="secondary" className="text-lg font-bold px-3 py-1 min-w-[50px] text-center">
-                            {prospect.numero}
-                          </Badge>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h3 className="text-lg font-semibold text-foreground truncate">
-                                {prospect.full_name}
-                              </h3>
-                              <QualificationBadge prospect={prospect} />
-                            </div>
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1 text-sm text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Mail className="h-3.5 w-3.5" />
-                                {prospect.email}
-                              </span>
-                              <span className="hidden sm:inline">•</span>
-                              <span className="flex items-center gap-1">
-                                <Phone className="h-3.5 w-3.5" />
-                                {prospect.phone}
-                              </span>
-                            </div>
-                            <p className="text-sm text-muted-foreground mt-2 line-clamp-1">
-                              {getSummary(prospect)}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <span className="text-xs text-muted-foreground whitespace-nowrap hidden sm:inline">
-                            {formatDate(prospect.created_at)}
-                          </span>
-                          <Button
-                            onClick={() => openEmailModal(prospect, "booking")}
-                            variant="outline"
-                            size="sm"
-                            className="gap-2"
-                            title="Envoyer un email"
-                          >
-                            <Send className="h-4 w-4" />
-                            <span className="hidden lg:inline">Email</span>
-                          </Button>
-                          <Button
-                            onClick={() => openDetail(prospect)}
-                            variant="default"
-                            size="sm"
-                            className="gap-2"
-                          >
-                            <Eye className="h-4 w-4" />
-                            <span className="hidden sm:inline">Voir plus</span>
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                disabled={deletingId === prospect.id}
-                              >
-                                {deletingId === prospect.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Trash2 className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Supprimer ce prospect ?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Êtes-vous sûr de vouloir supprimer <strong>{prospect.full_name}</strong> ? Cette action est irréversible.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDelete(prospect)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Supprimer
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
+              <Button onClick={fetchProspects} variant="outline" className="gap-2">
+                <RefreshCw className="h-4 w-4" />
+                <span className="hidden sm:inline">Actualiser</span>
+              </Button>
             </div>
-          </>
-        )}
+
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : prospects.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-20">
+                  <Users className="h-16 w-16 text-muted-foreground mb-4" />
+                  <h2 className="text-xl font-semibold text-foreground mb-2">Aucun prospect pour le moment</h2>
+                  <p className="text-muted-foreground text-center max-w-md">
+                    Les prospects qui remplissent le formulaire de contact apparaîtront ici.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <ProspectFilters 
+                  activeFilter={activeFilter}
+                  onFilterChange={setActiveFilter}
+                  counts={filterCounts}
+                />
+                <div className="space-y-4">
+                  {filteredProspects.length === 0 ? (
+                    <Card>
+                      <CardContent className="flex flex-col items-center justify-center py-12">
+                        <Users className="h-12 w-12 text-muted-foreground mb-3" />
+                        <p className="text-muted-foreground text-center">
+                          Aucun prospect dans cette catégorie
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    filteredProspects.map((prospect) => (
+                      <Card key={prospect.id} className="hover:shadow-md transition-shadow">
+                        <CardContent className="p-4 md:p-6">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex items-start gap-4 flex-1">
+                              <Badge variant="secondary" className="text-lg font-bold px-3 py-1 min-w-[50px] text-center">
+                                {prospect.numero}
+                              </Badge>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h3 className="text-lg font-semibold text-foreground truncate">
+                                    {prospect.full_name}
+                                  </h3>
+                                  <QualificationBadge prospect={prospect} />
+                                </div>
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1 text-sm text-muted-foreground">
+                                  <span className="flex items-center gap-1">
+                                    <Mail className="h-3.5 w-3.5" />
+                                    {prospect.email}
+                                  </span>
+                                  <span className="hidden sm:inline">•</span>
+                                  <span className="flex items-center gap-1">
+                                    <Phone className="h-3.5 w-3.5" />
+                                    {prospect.phone}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-2 line-clamp-1">
+                                  {getSummary(prospect)}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 sm:gap-3">
+                              <span className="text-xs text-muted-foreground whitespace-nowrap hidden sm:inline">
+                                {formatDate(prospect.created_at)}
+                              </span>
+                              <Button
+                                onClick={() => openEmailModal(prospect, "booking")}
+                                variant="outline"
+                                size="sm"
+                                className="gap-2"
+                                title="Envoyer un email"
+                              >
+                                <Send className="h-4 w-4" />
+                                <span className="hidden lg:inline">Email</span>
+                              </Button>
+                              <Button
+                                onClick={() => openDetail(prospect)}
+                                variant="default"
+                                size="sm"
+                                className="gap-2"
+                              >
+                                <Eye className="h-4 w-4" />
+                                <span className="hidden sm:inline">Voir plus</span>
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    disabled={deletingId === prospect.id}
+                                  >
+                                    {deletingId === prospect.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Supprimer ce prospect ?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Êtes-vous sûr de vouloir supprimer <strong>{prospect.full_name}</strong> ? Cette action est irréversible.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDelete(prospect)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Supprimer
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+          </TabsContent>
+
+          {/* Bookings Tab */}
+          <TabsContent value="bookings">
+            <AdminBookings />
+          </TabsContent>
+
+          {/* Availability Tab */}
+          <TabsContent value="availability">
+            <AdminAvailability />
+          </TabsContent>
+        </Tabs>
 
         {/* Modal Détails */}
         <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
