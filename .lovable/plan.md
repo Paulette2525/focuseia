@@ -1,222 +1,58 @@
 
-# Plan d'Implementation: Emails + Calendrier Cal.com
 
-## Resume
+# Optimisation du Formulaire de Prise de RDV
 
-Ce plan couvre l'implementation de deux fonctionnalites majeures:
-1. **Envoi d'emails via Resend** - Modal de composition d'email avec templates pre-definis
-2. **Integration Cal.com** - Lien de reservation integre dans les emails et l'interface
+## Le probleme
 
----
+Le formulaire actuel comporte **7 etapes et 25 champs obligatoires**. C'est un interrogatoire, pas un formulaire de contact. Les visiteurs abandonnent avant de finir.
 
-## Phase 1: Configuration des Secrets
+## La solution : formulaire en 3 etapes
 
-### Secrets a ajouter
-| Secret | Valeur | Usage |
-|--------|--------|-------|
-| `RESEND_API_KEY` | (fourni par l'utilisateur) | Envoi d'emails |
-| `CAL_API_KEY` | `cal_live_098444a7070f735f84d3696cbbcb21e1` | Integration Cal.com |
+Passer de 7 etapes a **3 etapes courtes** avec seulement **8 a 10 champs**, dont certains sont des choix rapides (boutons radio, menus deroulants) plutot que des champs texte libre.
 
----
+### Etape 1 - Vos coordonnees (3 champs - identique)
+- Nom et prenom (texte)
+- Email (texte)
+- Telephone (texte)
 
-## Phase 2: Systeme d'Envoi d'Emails
+### Etape 2 - Votre entreprise (4 champs - simplifie)
+- Nom de l'entreprise (texte)
+- Secteur d'activite (menu deroulant avec options pre-definies : E-commerce, Sante, Finance, Immobilier, Services, Industrie, Autre)
+- Taille de l'equipe (menu deroulant : 1-5, 6-20, 21-50, 51-200, 200+)
+- Votre role (menu deroulant : CEO/Fondateur, Directeur, Manager, Autre)
 
-### 2.1 Edge Function `send-email`
+### Etape 3 - Votre besoin (2-3 champs - l'essentiel)
+- Quel est votre principal defi aujourd'hui ? (menu deroulant : Automatiser des taches repetitives, Ameliorer le service client, Optimiser les processus internes, Analyser mes donnees, Autre)
+- Avez-vous deja utilise des outils d'IA ? (radio : Oui / Non / Un peu)
+- Un mot sur votre projet (textarea optionnel, court)
 
-Creation d'une edge function pour envoyer des emails via l'API Resend.
+## Ce qu'on gagne
 
-**Fichier:** `supabase/functions/send-email/index.ts`
+| Avant | Apres |
+|-------|-------|
+| 7 etapes | 3 etapes |
+| 25 champs obligatoires | 8-10 champs (dont 1 optionnel) |
+| Beaucoup de texte libre | Menus deroulants rapides |
+| 5-10 min pour remplir | 1-2 min pour remplir |
 
-**Fonctionnalites:**
-- Reception des parametres (destinataire, sujet, contenu HTML)
-- Validation des donnees
-- Envoi via Resend API
-- Gestion des erreurs et CORS
+## Les questions supprimees ne sont pas perdues
 
-```text
-Request Body:
-{
-  "to": "prospect@email.com",
-  "subject": "Votre consultation gratuite FocuseIA",
-  "html": "<p>Contenu de l'email...</p>",
-  "prospect_name": "Jean Dupont"
-}
-```
-
-### 2.2 Table `email_logs` (Historique)
-
-**Schema:**
-```text
-email_logs
-- id: UUID (PK)
-- prospect_id: UUID (FK -> prospects.id)
-- subject: TEXT
-- template_type: TEXT (welcome, followup, booking, custom)
-- sent_at: TIMESTAMP
-- status: TEXT (sent, failed)
-- sent_by: UUID (FK -> auth.users.id)
-```
-
-**RLS:** Lecture/Ecriture pour utilisateurs authentifies uniquement.
-
-### 2.3 Composant `EmailComposerModal`
-
-**Fichier:** `src/components/EmailComposerModal.tsx`
-
-**Fonctionnalites:**
-- Modal avec formulaire de composition
-- Templates pre-definis selectionnables:
-  - **Bienvenue**: Premier contact apres soumission
-  - **Relance**: Rappel amical avec proposition de RDV
-  - **Invitation Cal.com**: Lien direct vers le calendrier
-- Personnalisation automatique avec les donnees du prospect (nom, entreprise)
-- Bouton d'envoi avec feedback (succes/erreur)
-
-```text
-Interface utilisateur:
-+------------------------------------------+
-|  Envoyer un email a [Nom Prospect]       |
-+------------------------------------------+
-|  Template: [Dropdown - Bienvenue/Relance]|
-|                                          |
-|  Sujet: [________________________]       |
-|                                          |
-|  Contenu:                                |
-|  +------------------------------------+  |
-|  | Bonjour {prenom},                  |  |
-|  |                                    |  |
-|  | Suite a votre demande...           |  |
-|  +------------------------------------+  |
-|                                          |
-|  [ Annuler ]            [ Envoyer ]      |
-+------------------------------------------+
-```
-
-### 2.4 Integration dans la page Admin
-
-**Modifications de `src/pages/Admin.tsx`:**
-- Ajout d'un bouton "Envoyer email" sur chaque carte prospect
-- Ajout d'un bouton "Envoyer email" dans la modal de details
-- Gestion de l'etat pour ouvrir/fermer le modal email
-
----
-
-## Phase 3: Integration Cal.com
-
-### 3.1 Configuration Cal.com
-
-**Prerequis utilisateur:**
-1. Creer un compte sur cal.com
-2. Connecter Google Calendar dans les parametres Cal.com
-3. Creer un type d'evenement "Consultation Gratuite FocuseIA" (30min)
-4. Recuperer le lien de reservation (ex: `https://cal.com/votreequipe/consultation`)
-
-### 3.2 Constante de configuration
-
-**Fichier:** `src/lib/calendarConfig.ts`
-
-```text
-export const CAL_BOOKING_URL = "https://cal.com/VOTRE_USERNAME/consultation";
-```
-
-### 3.3 Integration dans les Templates d'Emails
-
-Chaque template inclura automatiquement un lien vers Cal.com:
-
-```text
-Template "Invitation RDV":
----
-Bonjour {prenom},
-
-Reservez votre consultation gratuite de 30 minutes 
-avec notre equipe FocuseIA:
-
-[Bouton: Reserver mon creneau] -> lien Cal.com
-
-A tres bientot!
-```
-
-### 3.4 Bouton d'action rapide (Optionnel)
-
-Ajout d'un bouton "Inviter a reserver" sur chaque carte prospect qui:
-1. Ouvre le modal email
-2. Pre-selectionne le template "Invitation Cal.com"
-
----
-
-## Fichiers a creer/modifier
-
-### Nouveaux fichiers
-| Fichier | Description |
-|---------|-------------|
-| `supabase/functions/send-email/index.ts` | Edge function Resend |
-| `src/components/EmailComposerModal.tsx` | Modal de composition |
-| `src/lib/emailTemplates.ts` | Templates d'emails |
-| `src/lib/calendarConfig.ts` | Configuration Cal.com |
-
-### Fichiers modifies
-| Fichier | Modifications |
-|---------|---------------|
-| `src/pages/Admin.tsx` | Ajout boutons email, integration modal |
-| `supabase/config.toml` | Configuration edge function |
-
-### Migration base de donnees
-- Creation table `email_logs` avec RLS
-
----
+Les questions detaillees (vision, frustrations, priorites, engagement) seront posees **pendant la consultation gratuite** - quand le prospect est deja engage. C'est bien plus efficace.
 
 ## Details techniques
 
-### Edge Function send-email
+### Fichier modifie
+- `src/components/BookingFormDialog.tsx` : refonte complete du formulaire
 
-```text
-Endpoint: POST /functions/v1/send-email
-Headers: Authorization: Bearer {user_token}
+### Changements principaux
+1. Reduire les `steps` de 7 a 3
+2. Reduire le `formData` a 8-10 champs
+3. Remplacer les `Textarea` par des `Select` (menus deroulants) pour les reponses structurees
+4. Mettre le champ "description du projet" en optionnel
+5. Adapter la validation (`validateStep`) aux nouvelles etapes
+6. Adapter le `handleSubmit` pour envoyer les bons champs vers la base de donnees
+7. Mettre a jour le scoring dans `src/lib/prospectScoring.ts` car certains champs de qualification disparaissent
 
-Validation:
-- to: email valide
-- subject: non vide
-- html: non vide
-
-Reponse succes: { success: true, id: "email_id" }
-Reponse erreur: { success: false, error: "message" }
-```
-
-### Templates d'emails disponibles
-
-| Template | Sujet | Contenu |
-|----------|-------|---------|
-| welcome | Bienvenue chez FocuseIA | Remerciement + presentation |
-| followup | Votre projet IA nous interesse | Rappel + proposition RDV |
-| booking | Reservez votre consultation | Lien Cal.com direct |
-| custom | (personnalise) | (personnalise) |
-
-### Variables de personnalisation
-
-```text
-{prospect_name} -> Nom complet
-{company_name} -> Nom entreprise
-{sector} -> Secteur d'activite
-{booking_url} -> Lien Cal.com
-```
-
----
-
-## Ordre d'implementation
-
-1. **Ajouter les secrets** RESEND_API_KEY et CAL_API_KEY
-2. **Creer la table email_logs** avec migration
-3. **Creer l'edge function send-email**
-4. **Creer le fichier de configuration Cal.com**
-5. **Creer les templates d'emails**
-6. **Creer le composant EmailComposerModal**
-7. **Integrer dans la page Admin**
-8. **Tester l'envoi d'email**
-
----
-
-## Remarque importante
-
-Pour que Resend fonctionne, vous devez avoir un domaine verifie (ex: `@focuseia.com`). 
-Si vous n'en avez pas encore, vous pouvez utiliser le domaine de test Resend pour commencer: `onboarding@resend.dev` (limite a votre propre adresse email).
+### Base de donnees
+- Aucune migration necessaire : les colonnes existantes acceptent des valeurs `null`, donc les anciens champs non remplis seront simplement vides pour les nouveaux prospects
 
