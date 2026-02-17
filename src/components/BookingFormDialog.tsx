@@ -540,8 +540,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
           <div className="flex-shrink-0 p-4 sm:p-6 pt-3 sm:pt-4 border-t border-primary/10 bg-background/80 backdrop-blur-sm">
             {error && <p className="mb-3 text-sm text-destructive text-center">{error}</p>}
 
-            {currentStep <= 3 ? (
-              <div className="flex justify-between gap-3 sm:gap-4">
+            <div className="flex justify-between gap-3 sm:gap-4">
                 <Button
                   variant="outline"
                   onClick={prevStep}
@@ -582,17 +581,6 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                   </Button>
                 )}
               </div>
-            ) : (
-              <div className="flex justify-end">
-                <Button
-                  variant="ghost"
-                  onClick={handleSkipBooking}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  Passer cette étape →
-                </Button>
-              </div>
-            )}
           </div>
         </div>
       </DialogContent>
