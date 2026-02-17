@@ -1,44 +1,72 @@
 
 
-# Correction des politiques RLS et verification de la page Admin
+# Optimisation de la page Admin
 
-## Probleme identifie
+## Probleme
 
-Les tables `availability_slots` et `bookings` ont toutes leurs politiques RLS configurees en mode **RESTRICTIVE** au lieu de **PERMISSIVE**. En PostgreSQL, s'il n'y a aucune politique permissive, l'acces est refuse par defaut -- meme si les conditions des politiques restrictives sont remplies. Resultat : l'admin connecte ne peut ni lire ni modifier les disponibilites, et le prospect ne peut ni voir les creneaux ni creer de reservation.
+La page admin affiche encore la structure de l'ancien formulaire a 7 etapes (25 champs). Le formulaire actuel n'a que 3 etapes + calendrier avec 10 champs. Resultat :
+- La modal "Voir plus" contient 7 sections dont 5 sont pratiquement vides (Vision, Organisation, IA, Decision, Seance Gratuite)
+- Le lien entre un prospect et son rendez-vous n'est pas visible
+- Le scoring de qualification reste correct mais le resume du prospect utilise des champs souvent vides (`sector`, `team_size`, `project_priority`)
 
-## Solution
+## Modifications proposees
 
-Supprimer toutes les politiques RLS existantes sur les deux tables et les recreer en mode **PERMISSIVE** (le mode par defaut de PostgreSQL).
+### 1. Simplifier la modal de details du prospect
+
+Remplacer les 7 sections par 3 sections correspondant aux etapes actuelles du formulaire :
+
+- **Coordonnees** : Nom, Email, Telephone, Date de soumission
+- **Entreprise** : Nom entreprise, Secteur, Taille equipe, Role
+- **Besoin** : Defi principal, Experience IA, Description du projet
+
+Supprimer les sections vides : Vision & Ambition, Organisation, IA & Automatisation, Decision & Engagement, Seance Gratuite.
+
+### 2. Afficher le rendez-vous lie au prospect
+
+Dans la modal de details et dans la liste des prospects :
+- Charger les bookings associes a chaque prospect
+- Afficher une icone/badge "RDV confirme" ou "Pas de RDV" sur chaque carte prospect
+- Dans la modal, ajouter une section "Rendez-vous" montrant la date et l'heure du RDV s'il existe
+
+### 3. Ameliorer la liste des prospects
+
+- Modifier le resume (`getSummary`) pour utiliser les champs remplis : entreprise, defi principal, experience IA
+- Ajouter un indicateur visuel (badge ou icone) montrant si le prospect a reserve un creneau ou non
+- Permettre de filtrer par "Avec RDV" / "Sans RDV"
+
+### 4. Ameliorer l'onglet Rendez-vous
+
+- Afficher plus de details sur chaque rendez-vous : defi principal du prospect, entreprise
+- Ajouter un lien rapide pour voir les details complets du prospect depuis un rendez-vous
+
+### 5. Dashboard rapide (en-tete)
+
+Ajouter des compteurs visuels en haut de la page :
+- Nombre de prospects total / cette semaine
+- Nombre de RDV a venir
+- Nombre de prospects sans RDV (a relancer)
 
 ## Details techniques
 
-### Migration base de donnees
+### Fichiers modifies
 
-Une seule migration SQL qui :
+**`src/pages/Admin.tsx`** :
+- Simplifier la modal de details (3 sections au lieu de 7)
+- Charger les bookings en parallele des prospects
+- Ajouter les compteurs en haut de page
+- Ajouter le filtre "Avec/Sans RDV"
+- Modifier `getSummary()` pour utiliser `company_name`, `main_challenges`, `ai_tools_usage`
+- Afficher le statut de RDV sur chaque carte prospect
+- Ajouter la section "Rendez-vous" dans la modal de details
 
-1. Supprime les 7 politiques RLS existantes (4 sur `availability_slots`, 3 sur `bookings`)
-2. Recree les memes politiques en mode PERMISSIVE :
+**`src/components/AdminBookings.tsx`** :
+- Ajouter les infos du prospect (defi, entreprise) dans chaque carte de RDV
+- Ajouter un bouton "Voir le prospect" pour naviguer vers les details
 
-**Table `availability_slots`** :
-- SELECT : lecture publique (tout le monde peut voir les dispos)
-- INSERT : reserve aux utilisateurs authentifies
-- UPDATE : reserve aux utilisateurs authentifies
-- DELETE : reserve aux utilisateurs authentifies
+**`src/components/ProspectFilters.tsx`** :
+- Ajouter un filtre "Avec RDV" / "Sans RDV"
 
-**Table `bookings`** :
-- SELECT : reserve aux utilisateurs authentifies (admin)
-- INSERT : public (les prospects peuvent reserver)
-- UPDATE : reserve aux utilisateurs authentifies (annulation)
+### Aucune migration base de donnees necessaire
 
-### Aucune modification de code
-
-Les composants `AdminAvailability.tsx`, `AdminBookings.tsx`, et `BookingCalendar.tsx` sont deja correctement implementes. Le probleme est uniquement au niveau des politiques de la base de donnees.
-
-### Verification apres correction
-
-Une fois la migration appliquee :
-- L'onglet "Disponibilites" dans l'admin affichera les 5 creneaux par defaut (Lundi-Vendredi, 9h-17h)
-- L'admin pourra activer/desactiver, ajouter ou supprimer des disponibilites
-- L'onglet "Rendez-vous" affichera les reservations existantes
-- Les prospects pourront voir les creneaux disponibles dans le calendrier (etape 4 du formulaire)
+Toutes les donnees sont deja disponibles dans les tables existantes. La jointure `bookings.prospect_id -> prospects.id` permet de recuperer les RDV lies a chaque prospect.
 
