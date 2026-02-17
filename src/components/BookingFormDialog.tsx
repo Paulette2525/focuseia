@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, ArrowLeft, Send, Building2, Target, Settings, Brain, UserCheck, CalendarCheck, Rocket, User, Loader2, CheckCircle, Calendar, Mail } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowRight, ArrowLeft, Send, Building2, Brain, User, Loader2, CheckCircle, Calendar, Rocket } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
 interface BookingFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -15,12 +17,30 @@ interface BookingFormDialogProps {
 
 const steps = [
   { id: 1, title: "Vos Coordonnées", icon: User, subtitle: "Pour vous contacter" },
-  { id: 2, title: "Identité & Contexte", icon: Building2, subtitle: "Qui êtes-vous ?" },
-  { id: 3, title: "Vision & Ambition", icon: Target, subtitle: "Vos objectifs" },
-  { id: 4, title: "Organisation", icon: Settings, subtitle: "Votre quotidien" },
-  { id: 5, title: "IA & Automatisation", icon: Brain, subtitle: "Votre maturité" },
-  { id: 6, title: "Décision", icon: UserCheck, subtitle: "Votre engagement" },
-  { id: 7, title: "Séance Gratuite", icon: CalendarCheck, subtitle: "Le décollage" },
+  { id: 2, title: "Votre Entreprise", icon: Building2, subtitle: "Quelques infos clés" },
+  { id: 3, title: "Votre Besoin", icon: Brain, subtitle: "Comment vous aider" },
+];
+
+const SECTOR_OPTIONS = [
+  "E-commerce",
+  "Santé",
+  "Finance",
+  "Immobilier",
+  "Services",
+  "Industrie",
+  "Autre",
+];
+
+const TEAM_SIZE_OPTIONS = ["1-5", "6-20", "21-50", "51-200", "200+"];
+
+const ROLE_OPTIONS = ["CEO / Fondateur", "Directeur", "Manager", "Autre"];
+
+const CHALLENGE_OPTIONS = [
+  "Automatiser des tâches répétitives",
+  "Améliorer le service client",
+  "Optimiser les processus internes",
+  "Analyser mes données",
+  "Autre",
 ];
 
 const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
@@ -29,41 +49,18 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedName, setSubmittedName] = useState("");
   const [submittedEmail, setSubmittedEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    // Step 1 - Coordonnées
     fullName: "",
     email: "",
     phone: "",
-    // Step 2 - Identité & Contexte
     companyName: "",
-    role: "",
-    companyAge: "",
-    employeeCount: "",
     sector: "",
-    // Step 3 - Vision & Ambition
-    vision2to3Years: "",
-    growthLimit: "",
-    speedBlocker: "",
-    noChangeConsequence: "",
-    // Step 4 - Organisation
-    timeConsumingTasks: "",
-    humanDependentTasks: "",
-    errorProneAreas: "",
-    unstructuredProcesses: "",
-    // Step 5 - IA & Automatisation
-    currentAITools: "",
-    aiToolsUsage: "",
-    aiFrustrations: "",
-    topAutomationPriority: "",
-    // Step 6 - Décision
-    isDecisionMaker: "",
-    previousInvestments: "",
-    failureCriteria: "",
-    projectPriority: "",
-    // Step 7 - Séance Gratuite
-    whyNow: "",
-    sessionExpectations: "",
-    readyToChange: "",
+    teamSize: "",
+    role: "",
+    mainChallenge: "",
+    aiExperience: "",
+    projectDescription: "",
   });
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
@@ -71,53 +68,29 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const isEmailValid = (value: string) => {
-    const v = value.trim();
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-  };
-
-  const isPhoneValid = (value: string) => {
-    const digits = value.replace(/\D/g, "");
-    return digits.length >= 8;
-  };
+  const isEmailValid = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  const isPhoneValid = (value: string) => value.replace(/\D/g, "").length >= 8;
 
   const validateStep = (step: number): string | null => {
     const requiredByStep: Record<number, Array<keyof typeof formData>> = {
       1: ["fullName", "email", "phone"],
-      2: ["companyName", "role", "companyAge", "employeeCount", "sector"],
-      3: ["vision2to3Years", "growthLimit", "speedBlocker", "noChangeConsequence"],
-      4: ["timeConsumingTasks", "humanDependentTasks", "errorProneAreas", "unstructuredProcesses"],
-      5: ["currentAITools", "aiToolsUsage", "aiFrustrations", "topAutomationPriority"],
-      6: ["isDecisionMaker", "previousInvestments", "failureCriteria", "projectPriority"],
-      7: ["whyNow", "sessionExpectations", "readyToChange"],
+      2: ["companyName", "sector", "teamSize", "role"],
+      3: ["mainChallenge", "aiExperience"],
     };
 
     const fields = requiredByStep[step] ?? [];
-
     for (const field of fields) {
-      // Conditional: if no AI tools, aiToolsUsage can be skipped
-      if (step === 5 && field === "aiToolsUsage" && formData.currentAITools === "no") {
-        continue;
-      }
-
       const value = String(formData[field] ?? "").trim();
       if (!value) return "Merci de répondre à toutes les questions avant de continuer.";
-
-      if (step === 1 && field === "email" && !isEmailValid(value)) {
-        return "Merci d'entrer une adresse email valide.";
-      }
-      if (step === 1 && field === "phone" && !isPhoneValid(value)) {
-        return "Merci d'entrer un numéro de téléphone valide.";
-      }
+      if (step === 1 && field === "email" && !isEmailValid(value)) return "Merci d'entrer une adresse email valide.";
+      if (step === 1 && field === "phone" && !isPhoneValid(value)) return "Merci d'entrer un numéro de téléphone valide.";
     }
-
     return null;
   };
 
   const getFirstInvalidStep = (): number | null => {
-    for (let step = 1; step <= 7; step++) {
-      const err = validateStep(step);
-      if (err) return step;
+    for (let step = 1; step <= 3; step++) {
+      if (validateStep(step)) return step;
     }
     return null;
   };
@@ -126,19 +99,14 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
 
   const nextStep = () => {
     const err = validateStep(currentStep);
-    if (err) {
-      setError(err);
-      return;
-    }
-    if (currentStep < 7) setCurrentStep(currentStep + 1);
+    if (err) { setError(err); return; }
+    if (currentStep < 3) setCurrentStep(currentStep + 1);
   };
 
   const prevStep = () => {
     setError(null);
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
     const firstInvalid = getFirstInvalidStep();
@@ -149,36 +117,18 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     }
 
     setIsSubmitting(true);
-
     try {
       const { error: insertError } = await supabase.from("prospects").insert({
         full_name: formData.fullName,
         email: formData.email,
         phone: formData.phone,
         company_name: formData.companyName,
-        role: formData.role,
-        company_age: formData.companyAge,
-        team_size: formData.employeeCount,
         sector: formData.sector,
-        growth_vision: formData.vision2to3Years,
-        main_challenges: formData.growthLimit,
-        speed_blocker: formData.speedBlocker,
-        no_change_consequence: formData.noChangeConsequence,
-        time_savings: formData.timeConsumingTasks,
-        manual_tasks: formData.humanDependentTasks,
-        error_prone_areas: formData.errorProneAreas,
-        unstructured_processes: formData.unstructuredProcesses,
-        current_ai_tools: formData.currentAITools,
-        ai_tools_usage: formData.aiToolsUsage,
-        ai_frustrations: formData.aiFrustrations,
-        top_automation_priority: formData.topAutomationPriority,
-        is_decision_maker: formData.isDecisionMaker,
-        previous_investments: formData.previousInvestments,
-        failure_criteria: formData.failureCriteria,
-        project_priority: formData.projectPriority,
-        why_now: formData.whyNow,
-        session_expectations: formData.sessionExpectations,
-        ready_to_change: formData.readyToChange,
+        team_size: formData.teamSize,
+        role: formData.role,
+        main_challenges: formData.mainChallenge,
+        ai_tools_usage: formData.aiExperience,
+        growth_vision: formData.projectDescription || null,
       });
 
       if (insertError) {
@@ -188,7 +138,6 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
         return;
       }
 
-      // Show success screen
       setSubmittedName(formData.fullName);
       setSubmittedEmail(formData.email);
       setIsSubmitted(true);
@@ -200,7 +149,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     }
   };
 
-  const progressPercentage = (currentStep / 7) * 100;
+  const progressPercentage = (currentStep / 3) * 100;
 
   const renderStep = () => {
     switch (currentStep) {
@@ -213,47 +162,25 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                   Quel est votre nom et prénom ?
                 </Label>
                 <div className="relative">
-                  <Input
-                    id="fullName"
-                    value={formData.fullName}
-                    onChange={(e) => handleInputChange("fullName", e.target.value)}
-                    className="space-input"
-                    placeholder="Ex: Jean Dupont"
-                  />
+                  <Input id="fullName" value={formData.fullName} onChange={(e) => handleInputChange("fullName", e.target.value)} className="space-input" placeholder="Ex: Jean Dupont" />
                   <div className="input-glow" />
                 </div>
               </div>
-              
               <div className="group">
                 <Label htmlFor="email" className="text-foreground text-sm font-medium mb-2 block">
                   Quelle est votre adresse email ?
                 </Label>
                 <div className="relative">
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="space-input"
-                    placeholder="Ex: jean.dupont@entreprise.com"
-                  />
+                  <Input id="email" type="email" value={formData.email} onChange={(e) => handleInputChange("email", e.target.value)} className="space-input" placeholder="Ex: jean.dupont@entreprise.com" />
                   <div className="input-glow" />
                 </div>
               </div>
-              
               <div className="group">
                 <Label htmlFor="phone" className="text-foreground text-sm font-medium mb-2 block">
                   Quel est votre numéro de téléphone ?
                 </Label>
                 <div className="relative">
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    className="space-input"
-                    placeholder="Ex: +33 6 12 34 56 78"
-                  />
+                  <Input id="phone" type="tel" value={formData.phone} onChange={(e) => handleInputChange("phone", e.target.value)} className="space-input" placeholder="Ex: +33 6 12 34 56 78" />
                   <div className="input-glow" />
                 </div>
               </div>
@@ -267,82 +194,39 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
             <div className="space-y-4">
               <div className="group">
                 <Label htmlFor="companyName" className="text-foreground text-sm font-medium mb-2 block">
-                  Quel est le nom de votre entreprise ?
+                  Nom de votre entreprise
                 </Label>
                 <div className="relative">
-                  <Input
-                    id="companyName"
-                    value={formData.companyName}
-                    onChange={(e) => handleInputChange("companyName", e.target.value)}
-                    className="space-input"
-                    placeholder="Nom de l'entreprise"
-                  />
+                  <Input id="companyName" value={formData.companyName} onChange={(e) => handleInputChange("companyName", e.target.value)} className="space-input" placeholder="Nom de l'entreprise" />
                   <div className="input-glow" />
                 </div>
               </div>
-              
               <div className="group">
-                <Label htmlFor="role" className="text-foreground text-sm font-medium mb-2 block">
-                  Quel est votre rôle exact dans l'entreprise ?
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="role"
-                    value={formData.role}
-                    onChange={(e) => handleInputChange("role", e.target.value)}
-                    className="space-input"
-                    placeholder="Ex: CEO, Directeur des opérations..."
-                  />
-                  <div className="input-glow" />
-                </div>
+                <Label className="text-foreground text-sm font-medium mb-2 block">Secteur d'activité</Label>
+                <Select value={formData.sector} onValueChange={(v) => handleInputChange("sector", v)}>
+                  <SelectTrigger className="space-input"><SelectValue placeholder="Sélectionnez votre secteur" /></SelectTrigger>
+                  <SelectContent>
+                    {SECTOR_OPTIONS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
-              
               <div className="group">
-                <Label htmlFor="companyAge" className="text-foreground text-sm font-medium mb-2 block">
-                  Depuis combien de temps l'entreprise existe-t-elle ?
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="companyAge"
-                    value={formData.companyAge}
-                    onChange={(e) => handleInputChange("companyAge", e.target.value)}
-                    className="space-input"
-                    placeholder="Ex: 5 ans"
-                  />
-                  <div className="input-glow" />
-                </div>
+                <Label className="text-foreground text-sm font-medium mb-2 block">Taille de l'équipe</Label>
+                <Select value={formData.teamSize} onValueChange={(v) => handleInputChange("teamSize", v)}>
+                  <SelectTrigger className="space-input"><SelectValue placeholder="Nombre de personnes" /></SelectTrigger>
+                  <SelectContent>
+                    {TEAM_SIZE_OPTIONS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
-              
               <div className="group">
-                <Label htmlFor="employeeCount" className="text-foreground text-sm font-medium mb-2 block">
-                  Combien de personnes travaillent actuellement ?
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="employeeCount"
-                    value={formData.employeeCount}
-                    onChange={(e) => handleInputChange("employeeCount", e.target.value)}
-                    className="space-input"
-                    placeholder="Ex: 25 employés"
-                  />
-                  <div className="input-glow" />
-                </div>
-              </div>
-              
-              <div className="group">
-                <Label htmlFor="sector" className="text-foreground text-sm font-medium mb-2 block">
-                  Dans quel secteur évoluez-vous ?
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="sector"
-                    value={formData.sector}
-                    onChange={(e) => handleInputChange("sector", e.target.value)}
-                    className="space-input"
-                    placeholder="Ex: E-commerce, Santé, Finance..."
-                  />
-                  <div className="input-glow" />
-                </div>
+                <Label className="text-foreground text-sm font-medium mb-2 block">Votre rôle</Label>
+                <Select value={formData.role} onValueChange={(v) => handleInputChange("role", v)}>
+                  <SelectTrigger className="space-input"><SelectValue placeholder="Sélectionnez votre rôle" /></SelectTrigger>
+                  <SelectContent>
+                    {ROLE_OPTIONS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
@@ -353,169 +237,32 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
           <div className="space-y-5">
             <div className="space-y-4">
               <div className="group">
-                <Label htmlFor="vision2to3Years" className="text-foreground text-sm font-medium mb-2 block">
-                  Où souhaitez-vous voir votre entreprise dans 2 à 3 ans ?
+                <Label className="text-foreground text-sm font-medium mb-2 block">
+                  Quel est votre principal défi aujourd'hui ?
                 </Label>
-                <div className="relative">
-                  <Textarea
-                    id="vision2to3Years"
-                    value={formData.vision2to3Years}
-                    onChange={(e) => handleInputChange("vision2to3Years", e.target.value)}
-                    className="space-textarea"
-                    placeholder="Décrivez votre vision..."
-                  />
-                  <div className="input-glow" />
-                </div>
+                <Select value={formData.mainChallenge} onValueChange={(v) => handleInputChange("mainChallenge", v)}>
+                  <SelectTrigger className="space-input"><SelectValue placeholder="Sélectionnez votre défi" /></SelectTrigger>
+                  <SelectContent>
+                    {CHALLENGE_OPTIONS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
-              
-              <div className="group">
-                <Label htmlFor="growthLimit" className="text-foreground text-sm font-medium mb-2 block">
-                  Qu'est-ce qui limite le plus votre croissance ?
-                </Label>
-                <div className="relative">
-                  <Textarea
-                    id="growthLimit"
-                    value={formData.growthLimit}
-                    onChange={(e) => handleInputChange("growthLimit", e.target.value)}
-                    className="space-textarea"
-                    placeholder="Identifiez vos freins..."
-                  />
-                  <div className="input-glow" />
-                </div>
-              </div>
-              
-              <div className="group">
-                <Label htmlFor="speedBlocker" className="text-foreground text-sm font-medium mb-2 block">
-                  Qu'est-ce qui vous empêche d'aller plus vite ?
-                </Label>
-                <div className="relative">
-                  <Textarea
-                    id="speedBlocker"
-                    value={formData.speedBlocker}
-                    onChange={(e) => handleInputChange("speedBlocker", e.target.value)}
-                    className="space-textarea"
-                    placeholder="Vos obstacles principaux..."
-                  />
-                  <div className="input-glow" />
-                </div>
-              </div>
-              
-              <div className="group">
-                <Label htmlFor="noChangeConsequence" className="text-foreground text-sm font-medium mb-2 block">
-                  Si rien ne change, que se passe-t-il dans 12 mois ?
-                </Label>
-                <div className="relative">
-                  <Textarea
-                    id="noChangeConsequence"
-                    value={formData.noChangeConsequence}
-                    onChange={(e) => handleInputChange("noChangeConsequence", e.target.value)}
-                    className="space-textarea"
-                    placeholder="Projetez-vous dans le futur..."
-                  />
-                  <div className="input-glow" />
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 4:
-        return (
-          <div className="space-y-5">
-            <div className="space-y-4">
-              <div className="group">
-                <Label htmlFor="timeConsumingTasks" className="text-foreground text-sm font-medium mb-2 block">
-                  Quelles tâches sont les plus chronophages ?
-                </Label>
-                <div className="relative">
-                  <Textarea
-                    id="timeConsumingTasks"
-                    value={formData.timeConsumingTasks}
-                    onChange={(e) => handleInputChange("timeConsumingTasks", e.target.value)}
-                    className="space-textarea"
-                    placeholder="Listez les tâches qui prennent le plus de temps..."
-                  />
-                  <div className="input-glow" />
-                </div>
-              </div>
-              
-              <div className="group">
-                <Label htmlFor="humanDependentTasks" className="text-foreground text-sm font-medium mb-2 block">
-                  Quelles tâches reposent encore trop sur l'humain ?
-                </Label>
-                <div className="relative">
-                  <Textarea
-                    id="humanDependentTasks"
-                    value={formData.humanDependentTasks}
-                    onChange={(e) => handleInputChange("humanDependentTasks", e.target.value)}
-                    className="space-textarea"
-                    placeholder="Tâches manuelles répétitives..."
-                  />
-                  <div className="input-glow" />
-                </div>
-              </div>
-              
-              <div className="group">
-                <Label htmlFor="errorProneAreas" className="text-foreground text-sm font-medium mb-2 block">
-                  Où constatez-vous le plus d'erreurs ou de lenteurs ?
-                </Label>
-                <div className="relative">
-                  <Textarea
-                    id="errorProneAreas"
-                    value={formData.errorProneAreas}
-                    onChange={(e) => handleInputChange("errorProneAreas", e.target.value)}
-                    className="space-textarea"
-                    placeholder="Points de friction identifiés..."
-                  />
-                  <div className="input-glow" />
-                </div>
-              </div>
-              
-              <div className="group">
-                <Label htmlFor="unstructuredProcesses" className="text-foreground text-sm font-medium mb-2 block">
-                  Quels processus sont mal structurés ou inexistants ?
-                </Label>
-                <div className="relative">
-                  <Textarea
-                    id="unstructuredProcesses"
-                    value={formData.unstructuredProcesses}
-                    onChange={(e) => handleInputChange("unstructuredProcesses", e.target.value)}
-                    className="space-textarea"
-                    placeholder="Processus à améliorer..."
-                  />
-                  <div className="input-glow" />
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 5:
-        return (
-          <div className="space-y-5">
-            <div className="space-y-4">
               <div className="group">
                 <Label className="text-foreground text-sm font-medium mb-3 block">
-                  Utilisez-vous déjà des outils d'IA ou d'automatisation ?
+                  Avez-vous déjà utilisé des outils d'IA ?
                 </Label>
-                <RadioGroup
-                  value={formData.currentAITools}
-                  onValueChange={(value) => handleInputChange("currentAITools", value)}
-                  className="space-y-2"
-                >
+                <RadioGroup value={formData.aiExperience} onValueChange={(v) => handleInputChange("aiExperience", v)} className="space-y-2">
                   {[
-                    { value: "yes", label: "Oui" },
-                    { value: "no", label: "Non" },
-                    { value: "partially", label: "Partiellement" },
+                    { value: "oui", label: "Oui" },
+                    { value: "non", label: "Non" },
+                    { value: "un_peu", label: "Un peu" },
                   ].map((option) => (
                     <div
                       key={option.value}
                       role="button"
                       tabIndex={0}
-                      onClick={() => handleInputChange("currentAITools", option.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") handleInputChange("currentAITools", option.value);
-                      }}
+                      onClick={() => handleInputChange("aiExperience", option.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleInputChange("aiExperience", option.value); }}
                       className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio"
                     >
                       <RadioGroupItem value={option.value} id={`ai-${option.value}`} className="border-primary/50 text-primary" />
@@ -526,247 +273,21 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                   ))}
                 </RadioGroup>
               </div>
-              
               <div className="group">
-                <Label htmlFor="aiToolsUsage" className="text-foreground text-sm font-medium mb-2 block">
-                  Si oui, lesquels et pour quels usages ?
+                <Label htmlFor="projectDescription" className="text-foreground text-sm font-medium mb-2 block">
+                  Un mot sur votre projet <span className="text-muted-foreground font-normal">(optionnel)</span>
                 </Label>
                 <div className="relative">
                   <Textarea
-                    id="aiToolsUsage"
-                    value={formData.aiToolsUsage}
-                    onChange={(e) => handleInputChange("aiToolsUsage", e.target.value)}
+                    id="projectDescription"
+                    value={formData.projectDescription}
+                    onChange={(e) => handleInputChange("projectDescription", e.target.value)}
                     className="space-textarea"
-                    placeholder="Ex: ChatGPT pour la rédaction, Zapier pour l'automatisation..."
+                    placeholder="Décrivez brièvement votre projet..."
+                    rows={3}
                   />
                   <div className="input-glow" />
                 </div>
-              </div>
-              
-              <div className="group">
-                <Label htmlFor="aiFrustrations" className="text-foreground text-sm font-medium mb-2 block">
-                  Qu'est-ce qui vous frustre dans votre utilisation de l'IA ?
-                </Label>
-                <div className="relative">
-                  <Textarea
-                    id="aiFrustrations"
-                    value={formData.aiFrustrations}
-                    onChange={(e) => handleInputChange("aiFrustrations", e.target.value)}
-                    className="space-textarea"
-                    placeholder="Vos frustrations..."
-                  />
-                  <div className="input-glow" />
-                </div>
-              </div>
-              
-              <div className="group">
-                <Label htmlFor="topAutomationPriority" className="text-foreground text-sm font-medium mb-2 block">
-                  Si vous deviez automatiser UNE seule chose, laquelle ?
-                </Label>
-                <div className="relative">
-                  <Textarea
-                    id="topAutomationPriority"
-                    value={formData.topAutomationPriority}
-                    onChange={(e) => handleInputChange("topAutomationPriority", e.target.value)}
-                    className="space-textarea"
-                    placeholder="Votre priorité #1..."
-                  />
-                  <div className="input-glow" />
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 6:
-        return (
-          <div className="space-y-5">
-            <div className="space-y-4">
-              <div className="group">
-                <Label className="text-foreground text-sm font-medium mb-3 block">
-                  Êtes-vous décisionnaire sur ce type de projet ?
-                </Label>
-                <RadioGroup
-                  value={formData.isDecisionMaker}
-                  onValueChange={(value) => handleInputChange("isDecisionMaker", value)}
-                  className="space-y-2"
-                >
-                  {[
-                    { value: "yes", label: "Oui, entièrement" },
-                    { value: "partial", label: "Partiellement, avec validation" },
-                    { value: "no", label: "Non, je dois consulter" },
-                  ].map((option) => (
-                    <div
-                      key={option.value}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handleInputChange("isDecisionMaker", option.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") handleInputChange("isDecisionMaker", option.value);
-                      }}
-                      className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio"
-                    >
-                      <RadioGroupItem value={option.value} id={`decision-${option.value}`} className="border-primary/50 text-primary" />
-                      <Label htmlFor={`decision-${option.value}`} className="text-muted-foreground cursor-pointer group-hover/radio:text-foreground transition-colors">
-                        {option.label}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-              
-              <div className="group">
-                <Label className="text-foreground text-sm font-medium mb-3 block">
-                  Avez-vous déjà investi dans des solutions similaires ?
-                </Label>
-                <RadioGroup
-                  value={formData.previousInvestments}
-                  onValueChange={(value) => handleInputChange("previousInvestments", value)}
-                  className="space-y-2"
-                >
-                  {[
-                    { value: "yes", label: "Oui" },
-                    { value: "no", label: "Non" },
-                  ].map((option) => (
-                    <div
-                      key={option.value}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handleInputChange("previousInvestments", option.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") handleInputChange("previousInvestments", option.value);
-                      }}
-                      className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio"
-                    >
-                      <RadioGroupItem value={option.value} id={`invest-${option.value}`} className="border-primary/50 text-primary" />
-                      <Label htmlFor={`invest-${option.value}`} className="text-muted-foreground cursor-pointer group-hover/radio:text-foreground transition-colors">
-                        {option.label}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-              
-              <div className="group">
-                <Label htmlFor="failureCriteria" className="text-foreground text-sm font-medium mb-2 block">
-                  Qu'est-ce qui ferait que ce serait un échec pour vous ?
-                </Label>
-                <div className="relative">
-                  <Textarea
-                    id="failureCriteria"
-                    value={formData.failureCriteria}
-                    onChange={(e) => handleInputChange("failureCriteria", e.target.value)}
-                    className="space-textarea"
-                    placeholder="Définissez vos critères d'échec..."
-                  />
-                  <div className="input-glow" />
-                </div>
-              </div>
-              
-              <div className="group">
-                <Label className="text-foreground text-sm font-medium mb-3 block">
-                  À quel point ce projet est-il prioritaire ?
-                </Label>
-                <RadioGroup
-                  value={formData.projectPriority}
-                  onValueChange={(value) => handleInputChange("projectPriority", value)}
-                  className="grid grid-cols-2 gap-2"
-                >
-                  {[
-                    { value: "low", label: "Faible" },
-                    { value: "medium", label: "Moyenne" },
-                    { value: "high", label: "Élevée" },
-                    { value: "critical", label: "Critique" },
-                  ].map((option) => (
-                    <div
-                      key={option.value}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handleInputChange("projectPriority", option.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") handleInputChange("projectPriority", option.value);
-                      }}
-                      className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio"
-                    >
-                      <RadioGroupItem value={option.value} id={`priority-${option.value}`} className="border-primary/50 text-primary" />
-                      <Label htmlFor={`priority-${option.value}`} className="text-muted-foreground cursor-pointer group-hover/radio:text-foreground transition-colors">
-                        {option.label}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 7:
-        return (
-          <div className="space-y-5">
-            <div className="space-y-4">
-              <div className="group">
-                <Label htmlFor="whyNow" className="text-foreground text-sm font-medium mb-2 block">
-                  Pourquoi souhaitez-vous échanger avec FOCUSEIA maintenant ?
-                </Label>
-                <div className="relative">
-                  <Textarea
-                    id="whyNow"
-                    value={formData.whyNow}
-                    onChange={(e) => handleInputChange("whyNow", e.target.value)}
-                    className="space-textarea"
-                    placeholder="Qu'est-ce qui vous motive aujourd'hui..."
-                  />
-                  <div className="input-glow" />
-                </div>
-              </div>
-              
-              <div className="group">
-                <Label htmlFor="sessionExpectations" className="text-foreground text-sm font-medium mb-2 block">
-                  Qu'attendez-vous de cette première séance gratuite ?
-                </Label>
-                <div className="relative">
-                  <Textarea
-                    id="sessionExpectations"
-                    value={formData.sessionExpectations}
-                    onChange={(e) => handleInputChange("sessionExpectations", e.target.value)}
-                    className="space-textarea"
-                    placeholder="Vos attentes..."
-                  />
-                  <div className="input-glow" />
-                </div>
-              </div>
-              
-              <div className="group">
-                <Label className="text-foreground text-sm font-medium mb-3 block">
-                  Êtes-vous prêt à remettre en question votre organisation ?
-                </Label>
-                <RadioGroup
-                  value={formData.readyToChange}
-                  onValueChange={(value) => handleInputChange("readyToChange", value)}
-                  className="space-y-2"
-                >
-                  {[
-                    { value: "yes", label: "Oui, absolument", icon: "🚀" },
-                    { value: "maybe", label: "Peut-être, selon les recommandations", icon: "🤔" },
-                    { value: "no", label: "Non, je cherche des optimisations mineures", icon: "📊" },
-                  ].map((option) => (
-                    <div
-                      key={option.value}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handleInputChange("readyToChange", option.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") handleInputChange("readyToChange", option.value);
-                      }}
-                      className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio"
-                    >
-                      <RadioGroupItem value={option.value} id={`change-${option.value}`} className="border-primary/50 text-primary" />
-                      <Label htmlFor={`change-${option.value}`} className="text-muted-foreground cursor-pointer group-hover/radio:text-foreground transition-colors flex items-center gap-2">
-                        <span>{option.icon}</span> {option.label}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
               </div>
             </div>
           </div>
@@ -779,7 +300,6 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
 
   const handleClose = () => {
     onOpenChange(false);
-    // Reset after animation
     setTimeout(() => {
       setIsSubmitted(false);
       setCurrentStep(1);
@@ -788,29 +308,12 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
         email: "",
         phone: "",
         companyName: "",
-        role: "",
-        companyAge: "",
-        employeeCount: "",
         sector: "",
-        vision2to3Years: "",
-        growthLimit: "",
-        speedBlocker: "",
-        noChangeConsequence: "",
-        timeConsumingTasks: "",
-        humanDependentTasks: "",
-        errorProneAreas: "",
-        unstructuredProcesses: "",
-        currentAITools: "",
-        aiToolsUsage: "",
-        aiFrustrations: "",
-        topAutomationPriority: "",
-        isDecisionMaker: "",
-        previousInvestments: "",
-        failureCriteria: "",
-        projectPriority: "",
-        whyNow: "",
-        sessionExpectations: "",
-        readyToChange: "",
+        teamSize: "",
+        role: "",
+        mainChallenge: "",
+        aiExperience: "",
+        projectDescription: "",
       });
     }, 300);
   };
@@ -834,7 +337,6 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
           </div>
 
           <div className="relative z-10 p-6 sm:p-8 md:p-10 overflow-y-auto max-h-[85vh]">
-            {/* Success Icon */}
             <div className="flex justify-center mb-6">
               <div className="relative">
                 <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-primary/20 to-cyan-500/20 flex items-center justify-center">
@@ -846,54 +348,34 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
               </div>
             </div>
 
-            {/* Title */}
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center bg-gradient-to-r from-primary via-cyan-400 to-primary bg-clip-text text-transparent mb-3">
               Demande envoyée avec succès !
             </h2>
 
-            {/* Personalized message */}
             <p className="text-center text-muted-foreground text-base sm:text-lg mb-6 sm:mb-8">
               Merci <span className="text-primary font-semibold">{submittedName}</span> pour votre confiance !
             </p>
 
-            {/* Audit session card */}
             <div className="bg-background/50 border border-primary/20 rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
                   <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
-                    Séance d'audit gratuite
-                  </h3>
-                  <p className="text-muted-foreground text-sm sm:text-base">
-                    Nous vous contacterons très prochainement pour planifier votre première séance.
-                  </p>
+                  <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">Séance d'audit gratuite</h3>
+                  <p className="text-muted-foreground text-sm sm:text-base">Nous vous contacterons très prochainement pour planifier votre première séance.</p>
                 </div>
               </div>
-
-              {/* Email confirmation */}
               <div className="mt-5 pt-5 border-t border-primary/10 text-center">
-                <p className="text-muted-foreground text-sm sm:text-base mb-2">
-                  Un email de confirmation sera envoyé à :
-                </p>
-                <p className="text-primary font-semibold text-base sm:text-lg">
-                  {submittedEmail}
-                </p>
+                <p className="text-muted-foreground text-sm sm:text-base mb-2">Un email de confirmation sera envoyé à :</p>
+                <p className="text-primary font-semibold text-base sm:text-lg">{submittedEmail}</p>
               </div>
             </div>
 
-            {/* Next steps */}
             <div className="mb-6 sm:mb-8">
-              <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-4">
-                Prochaines étapes :
-              </h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-4">Prochaines étapes :</h3>
               <div className="space-y-3">
-                {[
-                  "Notre équipe analyse votre dossier",
-                  "Nous vous contactons sous 24-48h",
-                  "Nous planifions ensemble votre séance d'audit gratuite",
-                ].map((step, index) => (
+                {["Notre équipe analyse votre dossier", "Nous vous contactons sous 24-48h", "Nous planifions ensemble votre séance d'audit gratuite"].map((step, index) => (
                   <div key={index} className="flex items-center gap-3">
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0">
                       <span className="text-primary font-semibold text-sm">{index + 1}.</span>
@@ -904,11 +386,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
               </div>
             </div>
 
-            {/* Close button */}
-            <Button
-              onClick={handleClose}
-              className="w-full h-12 sm:h-14 bg-gradient-to-r from-primary to-cyan-500 text-primary-foreground font-semibold text-base sm:text-lg shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:shadow-[0_0_40px_rgba(56,189,248,0.6)] transition-all duration-300"
-            >
+            <Button onClick={handleClose} className="w-full h-12 sm:h-14 bg-gradient-to-r from-primary to-cyan-500 text-primary-foreground font-semibold text-base sm:text-lg shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:shadow-[0_0_40px_rgba(56,189,248,0.6)] transition-all duration-300">
               Fermer
             </Button>
           </div>
@@ -922,7 +400,6 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
       <DialogContent className="max-w-2xl w-[95vw] h-[90vh] sm:h-[85vh] flex flex-col bg-background/95 backdrop-blur-xl border border-primary/20 shadow-[0_0_50px_rgba(56,189,248,0.15)] p-0 overflow-hidden">
         {/* Animated Background Effects */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Orbiting particles */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px]">
             <div className="absolute inset-0 animate-[spin_20s_linear_infinite]">
               <div className="absolute top-0 left-1/2 w-2 h-2 bg-primary/40 rounded-full blur-sm" />
@@ -933,15 +410,13 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
               <div className="absolute top-1/2 right-0 w-2 h-2 bg-primary/30 rounded-full blur-sm" />
             </div>
           </div>
-          {/* Grid overlay */}
           <div className="absolute inset-0 bg-[linear-gradient(rgba(56,189,248,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
-          {/* Corner glows */}
           <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/20 rounded-full blur-3xl" />
           <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl" />
         </div>
 
         <div className="relative z-10 flex flex-col h-full min-h-0">
-          {/* Header - Fixed */}
+          {/* Header */}
           <DialogHeader className="flex-shrink-0 p-4 sm:p-6 pb-2">
             <div className="flex items-center justify-center gap-3">
               <div className="relative">
@@ -954,35 +429,13 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
             </div>
           </DialogHeader>
 
-          {/* Circular Progress Gauge - Fixed */}
+          {/* Circular Progress Gauge */}
           <div className="flex-shrink-0 px-4 sm:px-6 py-2 sm:py-3">
             <div className="flex items-center justify-center gap-4 sm:gap-6">
-              {/* Main Circular Gauge */}
               <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex-shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                  {/* Background circle */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="42"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="6"
-                    className="text-primary/10"
-                  />
-                  {/* Progress circle */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="42"
-                    fill="none"
-                    stroke="url(#progressGradient)"
-                    strokeWidth="6"
-                    strokeLinecap="round"
-                    strokeDasharray={`${progressPercentage * 2.64} 264`}
-                    className="transition-all duration-700 ease-out"
-                    style={{ filter: 'drop-shadow(0 0 6px rgba(56,189,248,0.5))' }}
-                  />
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" strokeWidth="6" className="text-primary/10" />
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="url(#progressGradient)" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${progressPercentage * 2.64} 264`} className="transition-all duration-700 ease-out" style={{ filter: 'drop-shadow(0 0 6px rgba(56,189,248,0.5))' }} />
                   <defs>
                     <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                       <stop offset="0%" stopColor="hsl(var(--primary))" />
@@ -990,14 +443,12 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                     </linearGradient>
                   </defs>
                 </svg>
-                {/* Center content */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-lg sm:text-xl md:text-2xl font-bold text-primary">{currentStep}</span>
-                  <span className="text-[10px] md:text-xs text-muted-foreground">/ 7</span>
+                  <span className="text-[10px] md:text-xs text-muted-foreground">/ 3</span>
                 </div>
               </div>
 
-              {/* Step Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   {(() => {
@@ -1011,7 +462,6 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   {steps[currentStep - 1].subtitle}
                 </p>
-                {/* Mini step indicators */}
                 <div className="flex gap-1 sm:gap-1.5 mt-2">
                   {steps.map((step) => (
                     <div
@@ -1030,16 +480,14 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
             </div>
           </div>
 
-          {/* Form Content with scroll - This is the scrollable area */}
+          {/* Form Content */}
           <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-6 py-3 custom-scrollbar">
             {renderStep()}
           </div>
 
-          {/* Navigation Buttons - Fixed at bottom */}
+          {/* Navigation Buttons */}
           <div className="flex-shrink-0 p-4 sm:p-6 pt-3 sm:pt-4 border-t border-primary/10 bg-background/80 backdrop-blur-sm">
-            {error ? (
-              <p className="mb-3 text-sm text-destructive text-center">{error}</p>
-            ) : null}
+            {error && <p className="mb-3 text-sm text-destructive text-center">{error}</p>}
 
             <div className="flex justify-between gap-3 sm:gap-4">
               <Button
@@ -1052,7 +500,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                 <span className="text-sm sm:text-base">Précédent</span>
               </Button>
 
-              {currentStep < 7 ? (
+              {currentStep < 3 ? (
                 <Button
                   onClick={nextStep}
                   disabled={!canGoNext}

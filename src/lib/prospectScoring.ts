@@ -1,4 +1,4 @@
-// Qualification scoring system for prospects
+// Qualification scoring system for prospects (simplified for 3-step form)
 
 export type QualificationCategory = 'qualified' | 'evaluate' | 'unqualified';
 
@@ -10,21 +10,21 @@ export interface QualificationResult {
 }
 
 interface ProspectData {
-  is_decision_maker: string | null;
-  project_priority: string | null;
-  ready_to_change: string | null;
-  current_ai_tools: string | null;
-  previous_investments: string | null;
+  role: string | null;
+  team_size: string | null;
+  main_challenges: string | null;
+  ai_tools_usage: string | null;
+  sector: string | null;
 }
 
 /**
  * Calculate the qualification score for a prospect
- * Based on key criteria:
- * - Decision maker status (0-3 pts)
- * - Project priority (0-3 pts)
- * - Ready to change (0-2 pts)
- * - Current AI tools usage (0-1 pt)
- * - Previous investments (0-1 pt)
+ * Based on new simplified criteria:
+ * - Role (0-3 pts): CEO/Fondateur = 3, Directeur = 2, Manager = 1
+ * - Team size (0-2 pts): bigger teams = higher score
+ * - Main challenge alignment (0-2 pts): automation-related = 2
+ * - AI experience (0-2 pts): already using = 2, a little = 1
+ * - Sector filled (0-1 pt): shows engagement
  * 
  * Total: 0-10 points
  */
@@ -32,45 +32,46 @@ export function calculateQualificationScore(prospect: ProspectData): Qualificati
   let score = 0;
   const maxScore = 10;
 
-  // Decision maker: +3 pts for "yes", +1 pt for "partial"
-  const decisionMaker = prospect.is_decision_maker?.toLowerCase() || '';
-  if (decisionMaker.includes('oui') || decisionMaker.includes('yes') || decisionMaker === 'entièrement') {
+  // Role: CEO/Fondateur = 3, Directeur = 2, Manager = 1
+  const role = prospect.role?.toLowerCase() || '';
+  if (role.includes('ceo') || role.includes('fondateur')) {
     score += 3;
-  } else if (decisionMaker.includes('partiel') || decisionMaker.includes('partial') || decisionMaker.includes('partiellement')) {
-    score += 1;
-  }
-
-  // Project priority: +3 pts for "critical", +2 pts for "high", +1 pt for "medium"
-  const priority = prospect.project_priority?.toLowerCase() || '';
-  if (priority.includes('critique') || priority.includes('critical') || priority.includes('urgente')) {
-    score += 3;
-  } else if (priority.includes('élevée') || priority.includes('high') || priority.includes('haute')) {
+  } else if (role.includes('directeur')) {
     score += 2;
-  } else if (priority.includes('moyenne') || priority.includes('medium') || priority.includes('modérée')) {
+  } else if (role.includes('manager')) {
     score += 1;
   }
 
-  // Ready to change: +2 pts for "yes", +1 pt for "maybe"
-  const readyToChange = prospect.ready_to_change?.toLowerCase() || '';
-  if (readyToChange.includes('oui') || readyToChange.includes('yes') || readyToChange.includes('absolument')) {
+  // Team size: 200+ = 2, 21-50/51-200 = 2, 6-20 = 1, 1-5 = 0
+  const teamSize = prospect.team_size || '';
+  if (teamSize === '200+' || teamSize === '51-200') {
     score += 2;
-  } else if (readyToChange.includes('peut-être') || readyToChange.includes('maybe') || readyToChange.includes('envisageable')) {
+  } else if (teamSize === '21-50' || teamSize === '6-20') {
     score += 1;
   }
 
-  // Current AI tools: +1 pt if using any tools (not "no" or empty)
-  const aiTools = prospect.current_ai_tools?.toLowerCase() || '';
-  if (aiTools && !aiTools.includes('non') && !aiTools.includes('no') && !aiTools.includes('aucun')) {
+  // Main challenge: automation-related challenges score higher
+  const challenge = prospect.main_challenges?.toLowerCase() || '';
+  if (challenge.includes('automatiser') || challenge.includes('optimiser')) {
+    score += 2;
+  } else if (challenge.includes('améliorer') || challenge.includes('analyser')) {
     score += 1;
   }
 
-  // Previous investments: +1 pt for "yes"
-  const investments = prospect.previous_investments?.toLowerCase() || '';
-  if (investments.includes('oui') || investments.includes('yes')) {
+  // AI experience: oui = 2, un peu = 1, non = 0
+  const aiUsage = prospect.ai_tools_usage?.toLowerCase() || '';
+  if (aiUsage === 'oui' || aiUsage.includes('yes')) {
+    score += 2;
+  } else if (aiUsage === 'un_peu' || aiUsage.includes('un peu') || aiUsage.includes('partially')) {
     score += 1;
   }
 
-  // Categorize based on score
+  // Sector filled: +1 pt for engagement
+  if (prospect.sector && prospect.sector.trim()) {
+    score += 1;
+  }
+
+  // Categorize
   let category: QualificationCategory;
   let label: string;
 
@@ -85,12 +86,7 @@ export function calculateQualificationScore(prospect: ProspectData): Qualificati
     label = 'Non qualifié';
   }
 
-  return {
-    score,
-    maxScore,
-    category,
-    label,
-  };
+  return { score, maxScore, category, label };
 }
 
 /**
@@ -99,10 +95,10 @@ export function calculateQualificationScore(prospect: ProspectData): Qualificati
 export function getQualificationBadgeVariant(category: QualificationCategory): 'default' | 'secondary' | 'destructive' {
   switch (category) {
     case 'qualified':
-      return 'default'; // Will be styled green via className
+      return 'default';
     case 'evaluate':
-      return 'secondary'; // Will be styled orange via className
+      return 'secondary';
     case 'unqualified':
-      return 'destructive'; // Red
+      return 'destructive';
   }
 }
