@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Filter } from "lucide-react";
 import type { QualificationCategory } from "@/lib/prospectScoring";
 
-export type FilterType = 'all' | QualificationCategory | 'with_booking' | 'without_booking';
+export type FilterType = 'all' | QualificationCategory;
 
 interface ProspectFiltersProps {
   activeFilter: FilterType;
@@ -12,8 +12,6 @@ interface ProspectFiltersProps {
     qualified: number;
     evaluate: number;
     unqualified: number;
-    with_booking: number;
-    without_booking: number;
   };
 }
 
@@ -23,8 +21,6 @@ const ProspectFilters = ({ activeFilter, onFilterChange, counts }: ProspectFilte
     { value: 'qualified', label: 'Qualifiés', color: 'text-green-600' },
     { value: 'evaluate', label: 'À évaluer', color: 'text-orange-500' },
     { value: 'unqualified', label: 'Non qualifiés', color: 'text-red-500' },
-    { value: 'with_booking', label: 'Avec RDV', color: 'text-blue-600' },
-    { value: 'without_booking', label: 'Sans RDV', color: 'text-muted-foreground' },
   ];
 
   return (
