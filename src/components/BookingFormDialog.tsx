@@ -6,9 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowRight, ArrowLeft, Send, Building2, Brain, User, Loader2, CheckCircle, Calendar, Rocket } from "lucide-react";
+import { ArrowRight, ArrowLeft, Send, Building2, Brain, User, Loader2, CheckCircle, Calendar, Rocket, CalendarDays } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import BookingCalendar from "@/components/BookingCalendar";
 
 interface BookingFormDialogProps {
   open: boolean;
@@ -19,6 +20,7 @@ const steps = [
   { id: 1, title: "Vos Coordonnées", icon: User, subtitle: "Pour vous contacter" },
   { id: 2, title: "Votre Entreprise", icon: Building2, subtitle: "Quelques infos clés" },
   { id: 3, title: "Votre Besoin", icon: Brain, subtitle: "Comment vous aider" },
+  { id: 4, title: "Votre Créneau", icon: CalendarDays, subtitle: "Choisissez un RDV" },
 ];
 
 const SECTOR_OPTIONS = [
@@ -50,6 +52,9 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
   const [submittedName, setSubmittedName] = useState("");
   const [submittedEmail, setSubmittedEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [prospectId, setProspectId] = useState<string | null>(null);
+  const [bookingDate, setBookingDate] = useState<string>("");
+  const [bookingTime, setBookingTime] = useState<string>("");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -105,7 +110,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
 
   const prevStep = () => {
     setError(null);
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+    if (currentStep > 1 && currentStep <= 3) setCurrentStep(currentStep - 1);
   };
 
   const handleSubmit = async () => {
@@ -118,7 +123,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
 
     setIsSubmitting(true);
     try {
-      const { error: insertError } = await supabase.from("prospects").insert({
+      const { data, error: insertError } = await supabase.from("prospects").insert({
         full_name: formData.fullName,
         email: formData.email,
         phone: formData.phone,
@@ -129,7 +134,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
         main_challenges: formData.mainChallenge,
         ai_tools_usage: formData.aiExperience,
         growth_vision: formData.projectDescription || null,
-      });
+      }).select("id").single();
 
       if (insertError) {
         console.error("Erreur lors de l'enregistrement:", insertError);
@@ -140,7 +145,8 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
 
       setSubmittedName(formData.fullName);
       setSubmittedEmail(formData.email);
-      setIsSubmitted(true);
+      setProspectId(data.id);
+      setCurrentStep(4); // Go to booking step
     } catch (err) {
       console.error("Erreur inattendue:", err);
       toast.error("Une erreur inattendue est survenue.");
@@ -149,7 +155,18 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     }
   };
 
-  const progressPercentage = (currentStep / 3) * 100;
+  const handleBookingConfirmed = (date: string, time: string) => {
+    setBookingDate(date);
+    setBookingTime(time);
+    setIsSubmitted(true);
+  };
+
+  const handleSkipBooking = () => {
+    setIsSubmitted(true);
+  };
+
+  const totalSteps = 4;
+  const progressPercentage = currentStep <= 3 ? (currentStep / totalSteps) * 100 : 100;
 
   const renderStep = () => {
     switch (currentStep) {
@@ -293,6 +310,15 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
           </div>
         );
 
+      case 4:
+        return prospectId ? (
+          <BookingCalendar
+            prospectId={prospectId}
+            prospectName={submittedName}
+            onBookingConfirmed={handleBookingConfirmed}
+          />
+        ) : null;
+
       default:
         return null;
     }
@@ -303,6 +329,9 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     setTimeout(() => {
       setIsSubmitted(false);
       setCurrentStep(1);
+      setProspectId(null);
+      setBookingDate("");
+      setBookingTime("");
       setFormData({
         fullName: "",
         email: "",
@@ -349,33 +378,55 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
             </div>
 
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center bg-gradient-to-r from-primary via-cyan-400 to-primary bg-clip-text text-transparent mb-3">
-              Demande envoyée avec succès !
+              {bookingDate ? "Rendez-vous confirmé !" : "Demande envoyée avec succès !"}
             </h2>
 
             <p className="text-center text-muted-foreground text-base sm:text-lg mb-6 sm:mb-8">
               Merci <span className="text-primary font-semibold">{submittedName}</span> pour votre confiance !
             </p>
 
-            <div className="bg-background/50 border border-primary/20 rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
+            {bookingDate ? (
+              <div className="bg-background/50 border border-primary/20 rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">Votre rendez-vous</h3>
+                    <p className="text-primary font-semibold">{bookingDate}</p>
+                    <p className="text-foreground">à {bookingTime}</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">Séance d'audit gratuite</h3>
-                  <p className="text-muted-foreground text-sm sm:text-base">Nous vous contacterons très prochainement pour planifier votre première séance.</p>
+                <div className="mt-5 pt-5 border-t border-primary/10 text-center">
+                  <p className="text-muted-foreground text-sm sm:text-base mb-2">Un email de confirmation sera envoyé à :</p>
+                  <p className="text-primary font-semibold text-base sm:text-lg">{submittedEmail}</p>
                 </div>
               </div>
-              <div className="mt-5 pt-5 border-t border-primary/10 text-center">
-                <p className="text-muted-foreground text-sm sm:text-base mb-2">Un email de confirmation sera envoyé à :</p>
-                <p className="text-primary font-semibold text-base sm:text-lg">{submittedEmail}</p>
+            ) : (
+              <div className="bg-background/50 border border-primary/20 rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">Séance d'audit gratuite</h3>
+                    <p className="text-muted-foreground text-sm sm:text-base">Nous vous contacterons très prochainement pour planifier votre première séance.</p>
+                  </div>
+                </div>
+                <div className="mt-5 pt-5 border-t border-primary/10 text-center">
+                  <p className="text-muted-foreground text-sm sm:text-base mb-2">Un email de confirmation sera envoyé à :</p>
+                  <p className="text-primary font-semibold text-base sm:text-lg">{submittedEmail}</p>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="mb-6 sm:mb-8">
               <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-4">Prochaines étapes :</h3>
               <div className="space-y-3">
-                {["Notre équipe analyse votre dossier", "Nous vous contactons sous 24-48h", "Nous planifions ensemble votre séance d'audit gratuite"].map((step, index) => (
+                {(bookingDate
+                  ? ["Notre équipe prépare votre séance", `Rendez-vous le ${bookingDate}`, "Vous recevrez un rappel avant la séance"]
+                  : ["Notre équipe analyse votre dossier", "Nous vous contactons sous 24-48h", "Nous planifions ensemble votre séance d'audit gratuite"]
+                ).map((step, index) => (
                   <div key={index} className="flex items-center gap-3">
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0">
                       <span className="text-primary font-semibold text-sm">{index + 1}.</span>
@@ -424,7 +475,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                 <div className="absolute inset-0 w-6 h-6 sm:w-8 sm:h-8 bg-primary/30 rounded-full blur-lg animate-ping" style={{ animationDuration: '2s' }} />
               </div>
               <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-center bg-gradient-to-r from-foreground via-primary to-cyan-400 bg-clip-text text-transparent">
-                Mission : Transformation
+                {currentStep === 4 ? "Réservez votre créneau" : "Mission : Transformation"}
               </DialogTitle>
             </div>
           </DialogHeader>
@@ -445,7 +496,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-lg sm:text-xl md:text-2xl font-bold text-primary">{currentStep}</span>
-                  <span className="text-[10px] md:text-xs text-muted-foreground">/ 3</span>
+                  <span className="text-[10px] md:text-xs text-muted-foreground">/ {totalSteps}</span>
                 </div>
               </div>
 
@@ -489,47 +540,59 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
           <div className="flex-shrink-0 p-4 sm:p-6 pt-3 sm:pt-4 border-t border-primary/10 bg-background/80 backdrop-blur-sm">
             {error && <p className="mb-3 text-sm text-destructive text-center">{error}</p>}
 
-            <div className="flex justify-between gap-3 sm:gap-4">
-              <Button
-                variant="outline"
-                onClick={prevStep}
-                disabled={currentStep === 1}
-                className="flex-1 h-10 sm:h-12 border-primary/20 text-foreground hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 disabled:opacity-30"
-              >
-                <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="text-sm sm:text-base">Précédent</span>
-              </Button>
+            {currentStep <= 3 ? (
+              <div className="flex justify-between gap-3 sm:gap-4">
+                <Button
+                  variant="outline"
+                  onClick={prevStep}
+                  disabled={currentStep === 1}
+                  className="flex-1 h-10 sm:h-12 border-primary/20 text-foreground hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 disabled:opacity-30"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="text-sm sm:text-base">Précédent</span>
+                </Button>
 
-              {currentStep < 3 ? (
+                {currentStep < 3 ? (
+                  <Button
+                    onClick={nextStep}
+                    disabled={!canGoNext}
+                    className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary to-cyan-500 text-primary-foreground hover:from-primary/90 hover:to-cyan-500/90 shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_30px_rgba(56,189,248,0.5)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <span className="text-sm sm:text-base">Suivant</span>
+                    <ArrowRight className="w-4 h-4 ml-1 sm:ml-2" />
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={!canGoNext || isSubmitting}
+                    className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary via-cyan-500 to-primary text-primary-foreground shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:shadow-[0_0_40px_rgba(56,189,248,0.6)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-1 sm:mr-2 animate-spin" />
+                        <span className="text-sm sm:text-base">Envoi...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Rocket className="w-4 h-4 mr-1 sm:mr-2" />
+                        <span className="text-sm sm:text-base">Envoyer</span>
+                        <Send className="w-4 h-4 ml-1 sm:ml-2" />
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="flex justify-end">
                 <Button
-                  onClick={nextStep}
-                  disabled={!canGoNext}
-                  className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary to-cyan-500 text-primary-foreground hover:from-primary/90 hover:to-cyan-500/90 shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_30px_rgba(56,189,248,0.5)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                  variant="ghost"
+                  onClick={handleSkipBooking}
+                  className="text-muted-foreground hover:text-foreground"
                 >
-                  <span className="text-sm sm:text-base">Suivant</span>
-                  <ArrowRight className="w-4 h-4 ml-1 sm:ml-2" />
+                  Passer cette étape →
                 </Button>
-              ) : (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={!canGoNext || isSubmitting}
-                  className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary via-cyan-500 to-primary text-primary-foreground shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:shadow-[0_0_40px_rgba(56,189,248,0.6)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-1 sm:mr-2 animate-spin" />
-                      <span className="text-sm sm:text-base">Envoi...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Rocket className="w-4 h-4 mr-1 sm:mr-2" />
-                      <span className="text-sm sm:text-base">Envoyer</span>
-                      <Send className="w-4 h-4 ml-1 sm:ml-2" />
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>
