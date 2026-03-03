@@ -53,6 +53,9 @@ interface Prospect {
   session_expectations: string | null;
   ready_to_change: string | null;
   desired_revenue: string | null;
+  meeting_objective: string | null;
+  project_urgency: string | null;
+  estimated_budget: string | null;
 }
 
 interface ProspectBooking {
