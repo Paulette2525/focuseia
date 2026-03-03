@@ -132,6 +132,7 @@ export type Database = {
           desired_revenue: string | null
           email: string
           error_prone_areas: string | null
+          estimated_budget: string | null
           failure_criteria: string | null
           full_name: string
           growth_vision: string | null
@@ -139,11 +140,13 @@ export type Database = {
           is_decision_maker: string | null
           main_challenges: string | null
           manual_tasks: string | null
+          meeting_objective: string | null
           no_change_consequence: string | null
           numero: number
           phone: string
           previous_investments: string | null
           project_priority: string | null
+          project_urgency: string | null
           ready_to_change: string | null
           role: string | null
           sector: string | null
@@ -166,6 +169,7 @@ export type Database = {
           desired_revenue?: string | null
           email: string
           error_prone_areas?: string | null
+          estimated_budget?: string | null
           failure_criteria?: string | null
           full_name: string
           growth_vision?: string | null
@@ -173,11 +177,13 @@ export type Database = {
           is_decision_maker?: string | null
           main_challenges?: string | null
           manual_tasks?: string | null
+          meeting_objective?: string | null
           no_change_consequence?: string | null
           numero?: number
           phone: string
           previous_investments?: string | null
           project_priority?: string | null
+          project_urgency?: string | null
           ready_to_change?: string | null
           role?: string | null
           sector?: string | null
@@ -200,6 +206,7 @@ export type Database = {
           desired_revenue?: string | null
           email?: string
           error_prone_areas?: string | null
+          estimated_budget?: string | null
           failure_criteria?: string | null
           full_name?: string
           growth_vision?: string | null
@@ -207,11 +214,13 @@ export type Database = {
           is_decision_maker?: string | null
           main_challenges?: string | null
           manual_tasks?: string | null
+          meeting_objective?: string | null
           no_change_consequence?: string | null
           numero?: number
           phone?: string
           previous_investments?: string | null
           project_priority?: string | null
+          project_urgency?: string | null
           ready_to_change?: string | null
           role?: string | null
           sector?: string | null
