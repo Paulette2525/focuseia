@@ -17,33 +17,33 @@ interface BookingFormDialogProps {
 }
 
 const steps = [
-  { id: 1, title: "Vos Coordonnées", icon: User, subtitle: "Pour vous contacter" },
-  { id: 2, title: "Votre Entreprise", icon: Building2, subtitle: "Quelques infos clés" },
-  { id: 3, title: "Votre Besoin", icon: Brain, subtitle: "Comment vous aider" },
-  { id: 4, title: "Votre Créneau", icon: CalendarDays, subtitle: "Choisissez un RDV" },
-];
+{ id: 1, title: "Vos Coordonnées", icon: User, subtitle: "Pour vous contacter" },
+{ id: 2, title: "Votre Entreprise", icon: Building2, subtitle: "Quelques infos clés" },
+{ id: 3, title: "Votre Besoin", icon: Brain, subtitle: "Comment vous aider" },
+{ id: 4, title: "Votre Créneau", icon: CalendarDays, subtitle: "Choisissez un RDV" }];
+
 
 const SECTOR_OPTIONS = [
-  "E-commerce",
-  "Santé",
-  "Finance",
-  "Immobilier",
-  "Services",
-  "Industrie",
-  "Autre",
-];
+"E-commerce",
+"Santé",
+"Finance",
+"Immobilier",
+"Services",
+"Industrie",
+"Autre"];
+
 
 const TEAM_SIZE_OPTIONS = ["1-5", "6-20", "21-50", "51-200", "200+"];
 
 const ROLE_OPTIONS = ["CEO / Fondateur", "Directeur", "Manager", "Autre"];
 
 const CHALLENGE_OPTIONS = [
-  "Automatiser des tâches répétitives",
-  "Améliorer le service client",
-  "Optimiser les processus internes",
-  "Analyser mes données",
-  "Autre",
-];
+"Automatiser des tâches répétitives",
+"Améliorer le service client",
+"Optimiser les processus internes",
+"Analyser mes données",
+"Autre"];
+
 
 const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -68,7 +68,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     projectDescription: "",
     meetingObjective: "",
     projectUrgency: "",
-    estimatedBudget: "",
+    estimatedBudget: ""
   });
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
@@ -83,7 +83,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     const requiredByStep: Record<number, Array<keyof typeof formData>> = {
       1: ["fullName", "email", "phone"],
       2: ["companyName", "sector", "teamSize", "role"],
-      3: ["mainChallenge", "aiExperience", "meetingObjective", "projectUrgency", "estimatedBudget"],
+      3: ["mainChallenge", "aiExperience", "meetingObjective", "projectUrgency", "estimatedBudget"]
     };
 
     const fields = requiredByStep[step] ?? [];
@@ -107,7 +107,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
 
   const nextStep = () => {
     const err = validateStep(currentStep);
-    if (err) { setError(err); return; }
+    if (err) {setError(err);return;}
     if (currentStep < 3) setCurrentStep(currentStep + 1);
   };
 
@@ -139,7 +139,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
         growth_vision: formData.projectDescription || null,
         meeting_objective: formData.meetingObjective,
         project_urgency: formData.projectUrgency,
-        estimated_budget: formData.estimatedBudget,
+        estimated_budget: formData.estimatedBudget
       }).select("id").single();
 
       if (insertError) {
@@ -172,7 +172,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
   };
 
   const totalSteps = 4;
-  const progressPercentage = currentStep <= 3 ? (currentStep / totalSteps) * 100 : 100;
+  const progressPercentage = currentStep <= 3 ? currentStep / totalSteps * 100 : 100;
 
   const renderStep = () => {
     switch (currentStep) {
@@ -208,8 +208,8 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                 </div>
               </div>
             </div>
-          </div>
-        );
+          </div>);
+
 
       case 2:
         return (
@@ -252,8 +252,8 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                 </Select>
               </div>
             </div>
-          </div>
-        );
+          </div>);
+
 
       case 3:
         return (
@@ -276,24 +276,24 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                 </Label>
                 <RadioGroup value={formData.aiExperience} onValueChange={(v) => handleInputChange("aiExperience", v)} className="space-y-2">
                   {[
-                    { value: "oui", label: "Oui" },
-                    { value: "non", label: "Non" },
-                    { value: "un_peu", label: "Un peu" },
-                  ].map((option) => (
-                    <div
-                      key={option.value}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handleInputChange("aiExperience", option.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleInputChange("aiExperience", option.value); }}
-                      className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio"
-                    >
+                  { value: "oui", label: "Oui" },
+                  { value: "non", label: "Non" },
+                  { value: "un_peu", label: "Un peu" }].
+                  map((option) =>
+                  <div
+                    key={option.value}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleInputChange("aiExperience", option.value)}
+                    onKeyDown={(e) => {if (e.key === "Enter" || e.key === " ") handleInputChange("aiExperience", option.value);}}
+                    className="flex items-center space-x-3 p-3 rounded-xl bg-background/30 border border-primary/10 hover:border-primary/30 transition-all duration-300 cursor-pointer group/radio">
+                    
                       <RadioGroupItem value={option.value} id={`ai-${option.value}`} className="border-primary/50 text-primary" />
                       <Label htmlFor={`ai-${option.value}`} className="text-muted-foreground cursor-pointer group-hover/radio:text-foreground transition-colors">
                         {option.label}
                       </Label>
                     </div>
-                  ))}
+                  )}
                 </RadioGroup>
               </div>
               <div className="group">
@@ -331,7 +331,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
               </div>
               <div className="group">
                 <Label htmlFor="projectDescription" className="text-foreground text-sm font-medium mb-2 block">
-                  Un mot sur votre projet <span className="text-muted-foreground font-normal">(optionnel)</span>
+                  Un mot sur votre projet 
                 </Label>
                 <div className="relative">
                   <Textarea
@@ -340,23 +340,23 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                     onChange={(e) => handleInputChange("projectDescription", e.target.value)}
                     className="space-textarea"
                     placeholder="Décrivez brièvement votre projet..."
-                    rows={3}
-                  />
+                    rows={3} />
+                  
                   <div className="input-glow" />
                 </div>
               </div>
             </div>
-          </div>
-        );
+          </div>);
+
 
       case 4:
-        return prospectId ? (
-          <BookingCalendar
-            prospectId={prospectId}
-            prospectName={submittedName}
-            onBookingConfirmed={handleBookingConfirmed}
-          />
-        ) : null;
+        return prospectId ?
+        <BookingCalendar
+          prospectId={prospectId}
+          prospectName={submittedName}
+          onBookingConfirmed={handleBookingConfirmed} /> :
+
+        null;
 
       default:
         return null;
@@ -384,7 +384,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
         projectDescription: "",
         meetingObjective: "",
         projectUrgency: "",
-        estimatedBudget: "",
+        estimatedBudget: ""
       });
     }, 300);
   };
@@ -427,8 +427,8 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
               Merci <span className="text-primary font-semibold">{submittedName}</span> pour votre confiance !
             </p>
 
-            {bookingDate ? (
-              <div className="bg-background/50 border border-primary/20 rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8">
+            {bookingDate ?
+            <div className="bg-background/50 border border-primary/20 rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
                     <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
@@ -443,9 +443,9 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                   <p className="text-muted-foreground text-sm sm:text-base mb-2">Un email de confirmation sera envoyé à :</p>
                   <p className="text-primary font-semibold text-base sm:text-lg">{submittedEmail}</p>
                 </div>
-              </div>
-            ) : (
-              <div className="bg-background/50 border border-primary/20 rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8">
+              </div> :
+
+            <div className="bg-background/50 border border-primary/20 rounded-2xl p-5 sm:p-6 mb-6 sm:mb-8">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
                     <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-primary" />
@@ -460,22 +460,22 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                   <p className="text-primary font-semibold text-base sm:text-lg">{submittedEmail}</p>
                 </div>
               </div>
-            )}
+            }
 
             <div className="mb-6 sm:mb-8">
               <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-4">Prochaines étapes :</h3>
               <div className="space-y-3">
-                {(bookingDate
-                  ? ["Notre équipe prépare votre séance", `Rendez-vous le ${bookingDate}`, "Vous recevrez un rappel avant la séance"]
-                  : ["Notre équipe analyse votre dossier", "Nous vous contactons sous 24-48h", "Nous planifions ensemble votre séance d'audit gratuite"]
-                ).map((step, index) => (
-                  <div key={index} className="flex items-center gap-3">
+                {(bookingDate ?
+                ["Notre équipe prépare votre séance", `Rendez-vous le ${bookingDate}`, "Vous recevrez un rappel avant la séance"] :
+                ["Notre équipe analyse votre dossier", "Nous vous contactons sous 24-48h", "Nous planifions ensemble votre séance d'audit gratuite"]).
+                map((step, index) =>
+                <div key={index} className="flex items-center gap-3">
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0">
                       <span className="text-primary font-semibold text-sm">{index + 1}.</span>
                     </div>
                     <p className="text-muted-foreground text-sm sm:text-base">{step}</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
 
@@ -484,8 +484,8 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
             </Button>
           </div>
         </DialogContent>
-      </Dialog>
-    );
+      </Dialog>);
+
   }
 
   return (
@@ -556,18 +556,18 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                   {steps[currentStep - 1].subtitle}
                 </p>
                 <div className="flex gap-1 sm:gap-1.5 mt-2">
-                  {steps.map((step) => (
-                    <div
-                      key={step.id}
-                      className={`h-1 flex-1 rounded-full transition-all duration-500 ${
-                        step.id === currentStep
-                          ? "bg-gradient-to-r from-primary to-cyan-400 shadow-[0_0_8px_rgba(56,189,248,0.5)]"
-                          : step.id < currentStep
-                          ? "bg-primary/50"
-                          : "bg-primary/10"
-                      }`}
-                    />
-                  ))}
+                  {steps.map((step) =>
+                  <div
+                    key={step.id}
+                    className={`h-1 flex-1 rounded-full transition-all duration-500 ${
+                    step.id === currentStep ?
+                    "bg-gradient-to-r from-primary to-cyan-400 shadow-[0_0_8px_rgba(56,189,248,0.5)]" :
+                    step.id < currentStep ?
+                    "bg-primary/50" :
+                    "bg-primary/10"}`
+                    } />
+
+                  )}
                 </div>
               </div>
             </div>
@@ -584,50 +584,50 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
 
             <div className="flex justify-between gap-3 sm:gap-4">
                 <Button
-                  variant="outline"
-                  onClick={prevStep}
-                  disabled={currentStep === 1}
-                  className="flex-1 h-10 sm:h-12 border-primary/20 text-foreground hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 disabled:opacity-30"
-                >
+                variant="outline"
+                onClick={prevStep}
+                disabled={currentStep === 1}
+                className="flex-1 h-10 sm:h-12 border-primary/20 text-foreground hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 disabled:opacity-30">
+                
                   <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
                   <span className="text-sm sm:text-base">Précédent</span>
                 </Button>
 
-                {currentStep < 3 ? (
-                  <Button
-                    onClick={nextStep}
-                    disabled={!canGoNext}
-                    className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary to-cyan-500 text-primary-foreground hover:from-primary/90 hover:to-cyan-500/90 shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_30px_rgba(56,189,248,0.5)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
+                {currentStep < 3 ?
+              <Button
+                onClick={nextStep}
+                disabled={!canGoNext}
+                className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary to-cyan-500 text-primary-foreground hover:from-primary/90 hover:to-cyan-500/90 shadow-[0_0_20px_rgba(56,189,248,0.3)] hover:shadow-[0_0_30px_rgba(56,189,248,0.5)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed">
+                
                     <span className="text-sm sm:text-base">Suivant</span>
                     <ArrowRight className="w-4 h-4 ml-1 sm:ml-2" />
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={!canGoNext || isSubmitting}
-                    className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary via-cyan-500 to-primary text-primary-foreground shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:shadow-[0_0_40px_rgba(56,189,248,0.6)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? (
-                      <>
+                  </Button> :
+
+              <Button
+                onClick={handleSubmit}
+                disabled={!canGoNext || isSubmitting}
+                className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-primary via-cyan-500 to-primary text-primary-foreground shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:shadow-[0_0_40px_rgba(56,189,248,0.6)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed">
+                
+                    {isSubmitting ?
+                <>
                         <Loader2 className="w-4 h-4 mr-1 sm:mr-2 animate-spin" />
                         <span className="text-sm sm:text-base">Envoi...</span>
-                      </>
-                    ) : (
-                      <>
+                      </> :
+
+                <>
                         <Rocket className="w-4 h-4 mr-1 sm:mr-2" />
                         <span className="text-sm sm:text-base">Envoyer</span>
                         <Send className="w-4 h-4 ml-1 sm:ml-2" />
                       </>
-                    )}
+                }
                   </Button>
-                )}
+              }
               </div>
           </div>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>);
+
 };
 
 export default BookingFormDialog;
