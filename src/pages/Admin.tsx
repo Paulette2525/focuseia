@@ -492,9 +492,9 @@ const Admin = () => {
                       <DetailRow label="Défi principal" value={selectedProspect.main_challenges} />
                       <DetailRow label="Expérience IA" value={selectedProspect.ai_tools_usage} />
                       <DetailRow label="Type d'activité" value={selectedProspect.business_type} />
-                      <DetailRow label="Objectif du RDV" value={(selectedProspect as any).meeting_objective} />
-                      <DetailRow label="Urgence du projet" value={(selectedProspect as any).project_urgency} />
-                      <DetailRow label="Budget estimé" value={(selectedProspect as any).estimated_budget} />
+                      <DetailRow label="Objectif du RDV" value={selectedProspect.meeting_objective} />
+                      <DetailRow label="Urgence du projet" value={selectedProspect.project_urgency} />
+                      <DetailRow label="Budget estimé" value={selectedProspect.estimated_budget} />
                     </CardContent>
                   </Card>
 
