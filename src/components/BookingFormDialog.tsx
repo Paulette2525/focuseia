@@ -349,6 +349,9 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
         mainChallenge: "",
         aiExperience: "",
         projectDescription: "",
+        meetingObjective: "",
+        projectUrgency: "",
+        estimatedBudget: "",
       });
     }, 300);
   };
