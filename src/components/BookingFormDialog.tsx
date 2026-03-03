@@ -137,6 +137,9 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
         main_challenges: formData.mainChallenge,
         ai_tools_usage: formData.aiExperience,
         growth_vision: formData.projectDescription || null,
+        meeting_objective: formData.meetingObjective,
+        project_urgency: formData.projectUrgency,
+        estimated_budget: formData.estimatedBudget,
       }).select("id").single();
 
       if (insertError) {
