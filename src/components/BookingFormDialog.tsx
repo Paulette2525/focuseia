@@ -66,6 +66,9 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     mainChallenge: "",
     aiExperience: "",
     projectDescription: "",
+    meetingObjective: "",
+    projectUrgency: "",
+    estimatedBudget: "",
   });
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
