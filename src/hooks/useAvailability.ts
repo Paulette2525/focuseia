@@ -164,5 +164,6 @@ export const useAvailability = () => {
     getActiveDays,
     getTimeSlotsForDate,
     isDateDisabled,
+    getNextAvailableDates,
   };
 };

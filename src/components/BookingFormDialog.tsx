@@ -297,6 +297,39 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                 </RadioGroup>
               </div>
               <div className="group">
+                <Label className="text-foreground text-sm font-medium mb-2 block">
+                  Quel est l'objectif de ce rendez-vous ?
+                </Label>
+                <Select value={formData.meetingObjective} onValueChange={(v) => handleInputChange("meetingObjective", v)}>
+                  <SelectTrigger className="space-input"><SelectValue placeholder="Sélectionnez un objectif" /></SelectTrigger>
+                  <SelectContent>
+                    {["Découvrir l'IA pour mon activité", "Automatiser un processus précis", "Obtenir un audit / conseil", "Lancer un projet concret"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="group">
+                <Label className="text-foreground text-sm font-medium mb-2 block">
+                  Quelle est l'urgence de votre projet ?
+                </Label>
+                <Select value={formData.projectUrgency} onValueChange={(v) => handleInputChange("projectUrgency", v)}>
+                  <SelectTrigger className="space-input"><SelectValue placeholder="Sélectionnez l'urgence" /></SelectTrigger>
+                  <SelectContent>
+                    {["Urgent — sous 2 semaines", "Moyen terme — 1 à 3 mois", "Pas pressé — je m'informe"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="group">
+                <Label className="text-foreground text-sm font-medium mb-2 block">
+                  Quel est votre budget estimé ?
+                </Label>
+                <Select value={formData.estimatedBudget} onValueChange={(v) => handleInputChange("estimatedBudget", v)}>
+                  <SelectTrigger className="space-input"><SelectValue placeholder="Sélectionnez votre budget" /></SelectTrigger>
+                  <SelectContent>
+                    {["Moins de 1 000 €", "1 000 € – 5 000 €", "5 000 € – 15 000 €", "Plus de 15 000 €"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="group">
                 <Label htmlFor="projectDescription" className="text-foreground text-sm font-medium mb-2 block">
                   Un mot sur votre projet <span className="text-muted-foreground font-normal">(optionnel)</span>
                 </Label>
