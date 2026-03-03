@@ -1,21 +1,42 @@
 
 
-# Suppression des filtres "Avec RDV" / "Sans RDV"
+## Plan : Optimisation du formulaire + Calendrier limité à 3 jours
 
-## Contexte
+### Ce qui change
 
-Tous les prospects doivent obligatoirement reserver un rendez-vous via le formulaire. Les filtres "Avec RDV" et "Sans RDV" n'ont donc pas de raison d'etre.
+**1. Trois nouvelles questions dans l'étape 3 (Votre Besoin)**
 
-## Modifications
+Ajout de trois champs Select pour mieux qualifier le prospect :
+- **Objectif du rendez-vous** : Découvrir l'IA pour mon activité / Automatiser un processus / Obtenir un audit-conseil / Lancer un projet concret
+- **Urgence du projet** : Urgent (sous 2 semaines) / Moyen terme (1-3 mois) / Pas pressé (je m'informe)
+- **Budget estimé** : Moins de 1 000€ / 1 000€ - 5 000€ / 5 000€ - 15 000€ / Plus de 15 000€
 
-### 1. `src/components/ProspectFilters.tsx`
-- Retirer `'with_booking'` et `'without_booking'` du type `FilterType`
-- Retirer ces deux entrees du tableau `filters`
-- Retirer `with_booking` et `without_booking` de l'interface `counts`
+**2. Calendrier limité à 3 jours glissants**
 
-### 2. `src/pages/Admin.tsx`
-- Retirer le calcul de `counts.with_booking` et `counts.without_booking`
-- Retirer les branches de filtrage `activeFilter === 'with_booking'` et `activeFilter === 'without_booking'`
-- Retirer le compteur "Sans RDV" du dashboard en en-tete (s'il existe)
+Au lieu d'afficher un calendrier complet sur 60 jours, seuls les **3 prochains jours disponibles** (selon les créneaux configurés par l'admin) seront sélectionnables. Tous les autres jours seront désactivés. Cela force les prospects à prendre RDV rapidement.
 
-Deux fichiers modifies, aucune migration base de donnees.
+### Modifications techniques
+
+**Migration SQL** : Ajouter 3 colonnes à la table `prospects` :
+```sql
+ALTER TABLE prospects ADD COLUMN meeting_objective TEXT;
+ALTER TABLE prospects ADD COLUMN project_urgency TEXT;
+ALTER TABLE prospects ADD COLUMN estimated_budget TEXT;
+```
+
+**`src/components/BookingFormDialog.tsx`** :
+- Ajouter `meetingObjective`, `projectUrgency`, `estimatedBudget` au `formData`
+- Ajouter 3 nouveaux Select dans le `case 3` du `renderStep`
+- Mettre à jour `validateStep(3)` pour inclure ces champs obligatoires
+- Mettre à jour l'insert Supabase pour enregistrer les 3 nouvelles valeurs
+
+**`src/hooks/useAvailability.ts`** :
+- Modifier `isDateDisabled` pour ne permettre que les 3 prochains jours qui ont des créneaux actifs (au lieu de tous les jours actifs du calendrier)
+- Ajouter une fonction `getNextAvailableDates(count: number)` qui calcule les 3 prochains jours disponibles à partir d'aujourd'hui
+
+**`src/components/BookingCalendar.tsx`** :
+- Passer la contrainte des 3 jours au composant Calendar via la prop `disabled`
+
+**`src/pages/Admin.tsx`** :
+- Afficher les nouvelles colonnes (objectif, urgence, budget) dans la vue prospects
+
