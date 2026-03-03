@@ -66,6 +66,9 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     mainChallenge: "",
     aiExperience: "",
     projectDescription: "",
+    meetingObjective: "",
+    projectUrgency: "",
+    estimatedBudget: "",
   });
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
@@ -80,7 +83,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     const requiredByStep: Record<number, Array<keyof typeof formData>> = {
       1: ["fullName", "email", "phone"],
       2: ["companyName", "sector", "teamSize", "role"],
-      3: ["mainChallenge", "aiExperience"],
+      3: ["mainChallenge", "aiExperience", "meetingObjective", "projectUrgency", "estimatedBudget"],
     };
 
     const fields = requiredByStep[step] ?? [];
@@ -134,6 +137,9 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
         main_challenges: formData.mainChallenge,
         ai_tools_usage: formData.aiExperience,
         growth_vision: formData.projectDescription || null,
+        meeting_objective: formData.meetingObjective,
+        project_urgency: formData.projectUrgency,
+        estimated_budget: formData.estimatedBudget,
       }).select("id").single();
 
       if (insertError) {
@@ -291,6 +297,39 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                 </RadioGroup>
               </div>
               <div className="group">
+                <Label className="text-foreground text-sm font-medium mb-2 block">
+                  Quel est l'objectif de ce rendez-vous ?
+                </Label>
+                <Select value={formData.meetingObjective} onValueChange={(v) => handleInputChange("meetingObjective", v)}>
+                  <SelectTrigger className="space-input"><SelectValue placeholder="Sélectionnez un objectif" /></SelectTrigger>
+                  <SelectContent>
+                    {["Découvrir l'IA pour mon activité", "Automatiser un processus précis", "Obtenir un audit / conseil", "Lancer un projet concret"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="group">
+                <Label className="text-foreground text-sm font-medium mb-2 block">
+                  Quelle est l'urgence de votre projet ?
+                </Label>
+                <Select value={formData.projectUrgency} onValueChange={(v) => handleInputChange("projectUrgency", v)}>
+                  <SelectTrigger className="space-input"><SelectValue placeholder="Sélectionnez l'urgence" /></SelectTrigger>
+                  <SelectContent>
+                    {["Urgent — sous 2 semaines", "Moyen terme — 1 à 3 mois", "Pas pressé — je m'informe"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="group">
+                <Label className="text-foreground text-sm font-medium mb-2 block">
+                  Quel est votre budget estimé ?
+                </Label>
+                <Select value={formData.estimatedBudget} onValueChange={(v) => handleInputChange("estimatedBudget", v)}>
+                  <SelectTrigger className="space-input"><SelectValue placeholder="Sélectionnez votre budget" /></SelectTrigger>
+                  <SelectContent>
+                    {["Moins de 1 000 €", "1 000 € – 5 000 €", "5 000 € – 15 000 €", "Plus de 15 000 €"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="group">
                 <Label htmlFor="projectDescription" className="text-foreground text-sm font-medium mb-2 block">
                   Un mot sur votre projet <span className="text-muted-foreground font-normal">(optionnel)</span>
                 </Label>
@@ -343,6 +382,9 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
         mainChallenge: "",
         aiExperience: "",
         projectDescription: "",
+        meetingObjective: "",
+        projectUrgency: "",
+        estimatedBudget: "",
       });
     }, 300);
   };

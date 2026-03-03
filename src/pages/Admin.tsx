@@ -53,6 +53,9 @@ interface Prospect {
   session_expectations: string | null;
   ready_to_change: string | null;
   desired_revenue: string | null;
+  meeting_objective: string | null;
+  project_urgency: string | null;
+  estimated_budget: string | null;
 }
 
 interface ProspectBooking {
@@ -489,6 +492,9 @@ const Admin = () => {
                       <DetailRow label="Défi principal" value={selectedProspect.main_challenges} />
                       <DetailRow label="Expérience IA" value={selectedProspect.ai_tools_usage} />
                       <DetailRow label="Type d'activité" value={selectedProspect.business_type} />
+                      <DetailRow label="Objectif du RDV" value={selectedProspect.meeting_objective} />
+                      <DetailRow label="Urgence du projet" value={selectedProspect.project_urgency} />
+                      <DetailRow label="Budget estimé" value={selectedProspect.estimated_budget} />
                     </CardContent>
                   </Card>
 

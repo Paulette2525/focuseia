@@ -126,11 +126,32 @@ export const useAvailability = () => {
     return timeSlots;
   };
 
+  // Get the next N available dates from tomorrow onwards
+  const getNextAvailableDates = (count: number = 3): Date[] => {
+    const activeDays = getActiveDays();
+    if (activeDays.length === 0) return [];
+
+    const dates: Date[] = [];
+    const today = new Date();
+    let current = new Date(today);
+    current.setDate(current.getDate() + 1); // start from tomorrow
+
+    // Search up to 60 days ahead
+    for (let i = 0; i < 60 && dates.length < count; i++) {
+      if (activeDays.includes(current.getDay())) {
+        dates.push(new Date(current));
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    return dates;
+  };
+
   // Check if a date should be disabled in the calendar
   const isDateDisabled = (date: Date): boolean => {
-    if (isBefore(startOfDay(date), startOfDay(new Date()))) return true;
-    const activeDays = getActiveDays();
-    return !activeDays.includes(date.getDay());
+    const allowedDates = getNextAvailableDates(3);
+    return !allowedDates.some(
+      (d) => startOfDay(d).getTime() === startOfDay(date).getTime()
+    );
   };
 
   return {
@@ -143,5 +164,6 @@ export const useAvailability = () => {
     getActiveDays,
     getTimeSlotsForDate,
     isDateDisabled,
+    getNextAvailableDates,
   };
 };
