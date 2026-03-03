@@ -83,7 +83,7 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     const requiredByStep: Record<number, Array<keyof typeof formData>> = {
       1: ["fullName", "email", "phone"],
       2: ["companyName", "sector", "teamSize", "role"],
-      3: ["mainChallenge", "aiExperience"],
+      3: ["mainChallenge", "aiExperience", "meetingObjective", "projectUrgency", "estimatedBudget"],
     };
 
     const fields = requiredByStep[step] ?? [];
