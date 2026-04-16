@@ -63,12 +63,17 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     sector: "",
     teamSize: "",
     role: "",
+    websiteUrl: "",
+    annualRevenue: "",
     mainChallenge: "",
     aiExperience: "",
     projectDescription: "",
     meetingObjective: "",
     projectUrgency: "",
-    estimatedBudget: ""
+    estimatedBudget: "",
+    currentTools: "",
+    hoursWastedWeekly: "",
+    referralSource: "",
   });
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
@@ -248,6 +253,24 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                   <SelectTrigger className="space-input"><SelectValue placeholder="Sélectionnez votre rôle" /></SelectTrigger>
                   <SelectContent>
                     {ROLE_OPTIONS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="group">
+                <Label htmlFor="websiteUrl" className="text-foreground text-sm font-medium mb-2 block">
+                  Site internet <span className="text-muted-foreground font-normal">(optionnel)</span>
+                </Label>
+                <div className="relative">
+                  <Input id="websiteUrl" value={formData.websiteUrl} onChange={(e) => handleInputChange("websiteUrl", e.target.value)} className="space-input" placeholder="https://www.monsite.com" />
+                  <div className="input-glow" />
+                </div>
+              </div>
+              <div className="group">
+                <Label className="text-foreground text-sm font-medium mb-2 block">Chiffre d'affaires annuel</Label>
+                <Select value={formData.annualRevenue} onValueChange={(v) => handleInputChange("annualRevenue", v)}>
+                  <SelectTrigger className="space-input"><SelectValue placeholder="Sélectionnez une fourchette" /></SelectTrigger>
+                  <SelectContent>
+                    {["Moins de 100K€", "100K€ – 500K€", "500K€ – 1M€", "1M€ – 5M€", "Plus de 5M€"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
