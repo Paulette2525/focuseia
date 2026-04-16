@@ -26,11 +26,6 @@ const processSteps = [
   },
 ];
 
-const logos = [
-  "OpenAI",
-  "Claude",
-  "Mistral",
-];
 
 const Process = () => {
   return (
@@ -128,22 +123,6 @@ const Process = () => {
           </div>
         </div>
 
-        {/* Logos Carousel */}
-        <div className="relative overflow-hidden py-8">
-          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background to-transparent z-10" />
-          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background to-transparent z-10" />
-          
-          <div className="flex animate-scroll">
-            {[...logos, ...logos].map((logo, index) => (
-              <div
-                key={index}
-                className="flex-shrink-0 mx-4 px-6 py-3 rounded-full bg-secondary/30 backdrop-blur-sm border border-border/50 text-muted-foreground text-sm font-medium hover:border-primary/50 hover:text-primary transition-all duration-300"
-              >
-                {logo}
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );
