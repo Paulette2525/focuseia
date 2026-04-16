@@ -56,6 +56,11 @@ interface Prospect {
   meeting_objective: string | null;
   project_urgency: string | null;
   estimated_budget: string | null;
+  website_url: string | null;
+  annual_revenue: string | null;
+  current_tools: string | null;
+  hours_wasted_weekly: string | null;
+  referral_source: string | null;
 }
 
 interface ProspectBooking {
@@ -477,6 +482,8 @@ const Admin = () => {
                       <DetailRow label="Secteur d'activité" value={selectedProspect.sector} />
                       <DetailRow label="Nombre d'employés" value={selectedProspect.team_size} />
                       <DetailRow label="Rôle" value={selectedProspect.role} />
+                      <DetailRow label="Site internet" value={selectedProspect.website_url} />
+                      <DetailRow label="Chiffre d'affaires" value={selectedProspect.annual_revenue} />
                     </CardContent>
                   </Card>
 
@@ -495,6 +502,9 @@ const Admin = () => {
                       <DetailRow label="Objectif du RDV" value={selectedProspect.meeting_objective} />
                       <DetailRow label="Urgence du projet" value={selectedProspect.project_urgency} />
                       <DetailRow label="Budget estimé" value={selectedProspect.estimated_budget} />
+                      <DetailRow label="Outils actuels" value={selectedProspect.current_tools} />
+                      <DetailRow label="Heures perdues/semaine" value={selectedProspect.hours_wasted_weekly} />
+                      <DetailRow label="Source" value={selectedProspect.referral_source} />
                     </CardContent>
                   </Card>
 

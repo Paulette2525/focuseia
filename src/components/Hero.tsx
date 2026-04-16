@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { useBooking } from "@/contexts/BookingContext";
+import { ArrowRight, ChevronDown } from "lucide-react";
 
 // Generate random binary strings
 const generateBinary = () => {
@@ -30,25 +31,21 @@ const Hero = () => {
   const { openBooking } = useBooking();
 
   useEffect(() => {
-    // Initialize binary values
     setBinaryValues(Array.from({ length: 8 }, generateBinary));
-
-    // Update binary values periodically
     const interval = setInterval(() => {
-      setBinaryValues(prev => 
-        prev.map(() => generateBinary())
-      );
+      setBinaryValues(prev => prev.map(() => generateBinary()));
     }, 2000);
-
     return () => clearInterval(interval);
   }, []);
+
+  const scrollToServices = () => {
+    document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Neural Grid Background */}
       <div className="neural-grid opacity-40" />
-
-      {/* Hero Scan Effect */}
       <div className="hero-scan" />
 
       {/* Binary Floating Streams */}
@@ -70,12 +67,10 @@ const Hero = () => {
 
       {/* Neural Core Container */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        {/* Orbital Rings */}
         <div className="neural-ring neural-ring-1 absolute top-1/2 left-1/2" />
         <div className="neural-ring neural-ring-2 absolute top-1/2 left-1/2" />
         <div className="neural-ring neural-ring-3 absolute top-1/2 left-1/2" />
 
-        {/* Central Core */}
         <div className="neural-core w-32 h-32 md:w-40 md:h-40 rounded-full flex items-center justify-center">
           <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/30 via-primary/10 to-transparent" />
           <div className="absolute inset-4 rounded-full border border-primary/40 animate-pulse" />
@@ -83,7 +78,6 @@ const Hero = () => {
           <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-primary to-glow-teal opacity-80 blur-sm" />
         </div>
 
-        {/* Synapse Network SVG */}
         <svg className="synapse-container w-full h-full" viewBox="0 0 1000 800">
           <defs>
             <linearGradient id="synapseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -92,16 +86,12 @@ const Hero = () => {
               <stop offset="100%" stopColor="hsl(175 70% 50% / 0)" />
             </linearGradient>
           </defs>
-
-          {/* Synapse Lines */}
           <path className="synapse-line" d="M500,400 Q350,300 200,350" />
           <path className="synapse-line" d="M500,400 Q650,280 800,320" />
           <path className="synapse-line" d="M500,400 Q400,500 250,550" />
           <path className="synapse-line" d="M500,400 Q600,520 750,580" />
           <path className="synapse-line" d="M500,400 Q450,200 350,100" />
           <path className="synapse-line" d="M500,400 Q550,180 680,80" />
-
-          {/* Synapse Nodes */}
           <circle className="synapse-node" cx="200" cy="350" r="4" />
           <circle className="synapse-node" cx="800" cy="320" r="4" />
           <circle className="synapse-node" cx="250" cy="550" r="4" />
@@ -110,7 +100,6 @@ const Hero = () => {
           <circle className="synapse-node" cx="680" cy="80" r="4" />
         </svg>
 
-        {/* Orbiting Data Particles */}
         {particles.map((particle) => (
           <div
             key={particle.id}
@@ -127,24 +116,58 @@ const Hero = () => {
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-6 text-center">
+        {/* Premium Badge */}
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
+          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          <span className="text-primary text-sm font-medium tracking-wide">#1 Agence IA en France</span>
+        </div>
+
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight">
-          Automatisez votre business
+          La meilleure agence
           <br />
-          grâce à <span className="text-gradient text-glow">l'IA</span>
+          d'<span className="text-gradient text-glow">automatisation IA</span>
         </h1>
 
-        <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-10">
-          Nous accompagnons les entreprises dans leur transformation digitale
-          en intégrant des solutions d'intelligence artificielle sur mesure.
+        <p className="text-muted-foreground text-lg md:text-xl max-w-3xl mx-auto mb-8">
+          Nous créons des SaaS sur mesure, des systèmes d'automatisation et des plateformes
+          centralisées qui remplacent vos 10 outils et font le travail de 10 personnes.
         </p>
 
-        <div className="flex items-center justify-center">
+        {/* Social Proof Bar */}
+        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 mb-10 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <span className="text-primary font-bold text-lg">50+</span>
+            <span>entreprises accompagnées</span>
+          </div>
+          <div className="hidden md:block w-px h-4 bg-border" />
+          <div className="flex items-center gap-2">
+            <span className="text-primary font-bold text-lg">200+</span>
+            <span>automatisations déployées</span>
+          </div>
+          <div className="hidden md:block w-px h-4 bg-border" />
+          <div className="flex items-center gap-2">
+            <span className="text-primary font-bold text-lg">95%</span>
+            <span>de satisfaction</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Button
             size="lg"
-            className="cta-neural bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 py-6 text-base font-medium"
+            className="cta-neural bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 py-6 text-base font-medium group"
             onClick={openBooking}
           >
-            Prendre RDV
+            Réserver un appel stratégique
+            <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            className="rounded-full px-8 py-6 text-base font-medium border-primary/20 hover:bg-primary/10"
+            onClick={scrollToServices}
+          >
+            Découvrir nos services
+            <ChevronDown className="ml-2 w-4 h-4" />
           </Button>
         </div>
       </div>

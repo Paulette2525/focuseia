@@ -124,11 +124,13 @@ export type Database = {
         Row: {
           ai_frustrations: string | null
           ai_tools_usage: string | null
+          annual_revenue: string | null
           business_type: string | null
           company_age: string | null
           company_name: string | null
           created_at: string
           current_ai_tools: string | null
+          current_tools: string | null
           desired_revenue: string | null
           email: string
           error_prone_areas: string | null
@@ -136,6 +138,7 @@ export type Database = {
           failure_criteria: string | null
           full_name: string
           growth_vision: string | null
+          hours_wasted_weekly: string | null
           id: string
           is_decision_maker: string | null
           main_challenges: string | null
@@ -148,6 +151,7 @@ export type Database = {
           project_priority: string | null
           project_urgency: string | null
           ready_to_change: string | null
+          referral_source: string | null
           role: string | null
           sector: string | null
           session_expectations: string | null
@@ -156,16 +160,19 @@ export type Database = {
           time_savings: string | null
           top_automation_priority: string | null
           unstructured_processes: string | null
+          website_url: string | null
           why_now: string | null
         }
         Insert: {
           ai_frustrations?: string | null
           ai_tools_usage?: string | null
+          annual_revenue?: string | null
           business_type?: string | null
           company_age?: string | null
           company_name?: string | null
           created_at?: string
           current_ai_tools?: string | null
+          current_tools?: string | null
           desired_revenue?: string | null
           email: string
           error_prone_areas?: string | null
@@ -173,6 +180,7 @@ export type Database = {
           failure_criteria?: string | null
           full_name: string
           growth_vision?: string | null
+          hours_wasted_weekly?: string | null
           id?: string
           is_decision_maker?: string | null
           main_challenges?: string | null
@@ -185,6 +193,7 @@ export type Database = {
           project_priority?: string | null
           project_urgency?: string | null
           ready_to_change?: string | null
+          referral_source?: string | null
           role?: string | null
           sector?: string | null
           session_expectations?: string | null
@@ -193,16 +202,19 @@ export type Database = {
           time_savings?: string | null
           top_automation_priority?: string | null
           unstructured_processes?: string | null
+          website_url?: string | null
           why_now?: string | null
         }
         Update: {
           ai_frustrations?: string | null
           ai_tools_usage?: string | null
+          annual_revenue?: string | null
           business_type?: string | null
           company_age?: string | null
           company_name?: string | null
           created_at?: string
           current_ai_tools?: string | null
+          current_tools?: string | null
           desired_revenue?: string | null
           email?: string
           error_prone_areas?: string | null
@@ -210,6 +222,7 @@ export type Database = {
           failure_criteria?: string | null
           full_name?: string
           growth_vision?: string | null
+          hours_wasted_weekly?: string | null
           id?: string
           is_decision_maker?: string | null
           main_challenges?: string | null
@@ -222,6 +235,7 @@ export type Database = {
           project_priority?: string | null
           project_urgency?: string | null
           ready_to_change?: string | null
+          referral_source?: string | null
           role?: string | null
           sector?: string | null
           session_expectations?: string | null
@@ -230,6 +244,7 @@ export type Database = {
           time_savings?: string | null
           top_automation_priority?: string | null
           unstructured_processes?: string | null
+          website_url?: string | null
           why_now?: string | null
         }
         Relationships: []

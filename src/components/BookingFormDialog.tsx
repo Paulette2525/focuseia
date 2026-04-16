@@ -63,12 +63,17 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
     sector: "",
     teamSize: "",
     role: "",
+    websiteUrl: "",
+    annualRevenue: "",
     mainChallenge: "",
     aiExperience: "",
     projectDescription: "",
     meetingObjective: "",
     projectUrgency: "",
-    estimatedBudget: ""
+    estimatedBudget: "",
+    currentTools: "",
+    hoursWastedWeekly: "",
+    referralSource: "",
   });
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
@@ -134,13 +139,18 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
         sector: formData.sector,
         team_size: formData.teamSize,
         role: formData.role,
+        website_url: formData.websiteUrl || null,
+        annual_revenue: formData.annualRevenue || null,
         main_challenges: formData.mainChallenge,
         ai_tools_usage: formData.aiExperience,
         growth_vision: formData.projectDescription || null,
         meeting_objective: formData.meetingObjective,
         project_urgency: formData.projectUrgency,
-        estimated_budget: formData.estimatedBudget
-      }).select("id").single();
+        estimated_budget: formData.estimatedBudget,
+        current_tools: formData.currentTools || null,
+        hours_wasted_weekly: formData.hoursWastedWeekly || null,
+        referral_source: formData.referralSource || null,
+      } as any).select("id").single();
 
       if (insertError) {
         console.error("Erreur lors de l'enregistrement:", insertError);
@@ -251,6 +261,24 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="group">
+                <Label htmlFor="websiteUrl" className="text-foreground text-sm font-medium mb-2 block">
+                  Site internet <span className="text-muted-foreground font-normal">(optionnel)</span>
+                </Label>
+                <div className="relative">
+                  <Input id="websiteUrl" value={formData.websiteUrl} onChange={(e) => handleInputChange("websiteUrl", e.target.value)} className="space-input" placeholder="https://www.monsite.com" />
+                  <div className="input-glow" />
+                </div>
+              </div>
+              <div className="group">
+                <Label className="text-foreground text-sm font-medium mb-2 block">Chiffre d'affaires annuel</Label>
+                <Select value={formData.annualRevenue} onValueChange={(v) => handleInputChange("annualRevenue", v)}>
+                  <SelectTrigger className="space-input"><SelectValue placeholder="Sélectionnez une fourchette" /></SelectTrigger>
+                  <SelectContent>
+                    {["Moins de 100K€", "100K€ – 500K€", "500K€ – 1M€", "1M€ – 5M€", "Plus de 5M€"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>);
 
@@ -330,8 +358,34 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                 </Select>
               </div>
               <div className="group">
+                <Label htmlFor="currentTools" className="text-foreground text-sm font-medium mb-2 block">
+                  Quels outils/logiciels utilisez-vous ? <span className="text-muted-foreground font-normal">(optionnel)</span>
+                </Label>
+                <div className="relative">
+                  <Textarea
+                    id="currentTools"
+                    value={formData.currentTools}
+                    onChange={(e) => handleInputChange("currentTools", e.target.value)}
+                    className="space-textarea"
+                    placeholder="Ex: Excel, Salesforce, Notion, Zapier..."
+                    rows={2} />
+                  <div className="input-glow" />
+                </div>
+              </div>
+              <div className="group">
+                <Label className="text-foreground text-sm font-medium mb-2 block">
+                  Combien d'heures/semaine perdez-vous sur des tâches répétitives ?
+                </Label>
+                <Select value={formData.hoursWastedWeekly} onValueChange={(v) => handleInputChange("hoursWastedWeekly", v)}>
+                  <SelectTrigger className="space-input"><SelectValue placeholder="Sélectionnez une fourchette" /></SelectTrigger>
+                  <SelectContent>
+                    {["Moins de 5h", "5-15h", "15-30h", "Plus de 30h"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="group">
                 <Label htmlFor="projectDescription" className="text-foreground text-sm font-medium mb-2 block">
-                  Un mot sur votre projet 
+                  Un mot sur votre projet
                 </Label>
                 <div className="relative">
                   <Textarea
@@ -341,9 +395,19 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
                     className="space-textarea"
                     placeholder="Décrivez brièvement votre projet..."
                     rows={3} />
-                  
                   <div className="input-glow" />
                 </div>
+              </div>
+              <div className="group">
+                <Label className="text-foreground text-sm font-medium mb-2 block">
+                  Comment nous avez-vous connu ?
+                </Label>
+                <Select value={formData.referralSource} onValueChange={(v) => handleInputChange("referralSource", v)}>
+                  <SelectTrigger className="space-input"><SelectValue placeholder="Sélectionnez une option" /></SelectTrigger>
+                  <SelectContent>
+                    {["Réseaux sociaux", "Bouche à oreille", "Recherche Google", "Autre"].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>);
@@ -379,12 +443,17 @@ const BookingFormDialog = ({ open, onOpenChange }: BookingFormDialogProps) => {
         sector: "",
         teamSize: "",
         role: "",
+        websiteUrl: "",
+        annualRevenue: "",
         mainChallenge: "",
         aiExperience: "",
         projectDescription: "",
         meetingObjective: "",
         projectUrgency: "",
-        estimatedBudget: ""
+        estimatedBudget: "",
+        currentTools: "",
+        hoursWastedWeekly: "",
+        referralSource: "",
       });
     }, 300);
   };
